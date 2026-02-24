@@ -1,0 +1,14 @@
+# Fichiers système (inutiles à sauvegarder)
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+
+# Environnements virtuels (optionnel)
+.venv/
+venv/
+env/

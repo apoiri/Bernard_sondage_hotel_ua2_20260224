@@ -1,0 +1,107 @@
+{
+  "NB_CHAMBRES": 100,
+  "TAUX_OCCUPATION": 0.72,
+  "DUREE_MOYENNE_SEJOUR": 2.5,
+  "N_RESERVATIONS": 10512,
+  "SEGMENTS_NOMS": [
+    "Affaires_Solo",
+    "Congressiste",
+    "Loisirs_Couple",
+    "Local_Gourmet",
+    "Local_Spa"
+  ],
+  "SEGMENTS_POURCENTAGES": [
+    25.0,
+    20.0,
+    25.0,
+    20.0,
+    10.0
+  ],
+  "TAUX_ANNULATION_ANNUEL": 0.18,
+  "TAUX_ANNULATION_DIRECT": 0.07,
+  "TAUX_ANNULATION_INTERMEDIAIRE": 0.29,
+  "PART_RESERVATIONS_DIRECT": 0.5,
+  "CANAUX_DIRECT": [
+    "Site Web de l'hôtel",
+    "Courriel à l'hôtel",
+    "Téléphone à l'hôtel"
+  ],
+  "CANAUX_DIRECT_POIDS": [
+    0.4,
+    0.3,
+    0.3
+  ],
+  "CANAUX_INTERMEDIAIRES": [
+    "Booking.com",
+    "Expedia",
+    "Hotels.com",
+    "Trivago",
+    "Trip.com",
+    "TripAdvisor",
+    "Google",
+    "Airbnb",
+    "Autre OTA"
+  ],
+  "CANAUX_INTERMEDIAIRES_POIDS": [
+    0.35,
+    0.2,
+    0.08,
+    0.06,
+    0.06,
+    0.05,
+    0.05,
+    0.05,
+    0.1
+  ],
+  "PROBA_SAISON_BASSE_PAR_SEGMENT": [
+    0.5,
+    0.8,
+    0.2,
+    0.5,
+    0.5
+  ],
+  "LAMBDA_POISSON_NUITS": 2.5,
+  "MIN_NUITS": 1,
+  "MAX_NUITS": 14,
+  "TARIF_CHAMBRE_BASSE": 200,
+  "TARIF_CHAMBRE_HAUTE": 350,
+  "GAMMA_BANQUET_K": 2,
+  "GAMMA_BANQUET_THETA": 200,
+  "MOYENNES_REV_RESTO_PAR_SEGMENT": [
+    60,
+    45,
+    80,
+    150,
+    20
+  ],
+  "MOYENNES_REV_SPA_PAR_SEGMENT": [
+    0,
+    0,
+    180,
+    0,
+    120
+  ],
+  "PROBA_FORFAIT_GASTRONOMIQUE_PAR_SEGMENT": [
+    0.3,
+    0.1,
+    0.8,
+    0.5,
+    0.2
+  ],
+  "NPS_CONSTANTE": 8.0,
+  "NPS_EFFET_HAUTE_SAISON": -1.5,
+  "NPS_EFFET_REV_SPA_SUP_100": 1.0,
+  "NPS_ECART_TYPE_BRUIT": 0.5,
+  "NPS_CORRELATION_REV_SPA": 0.75,
+  "COEFF_REV_RESTO": 1.1,
+  "COEFF_REV_SPA": 1.3,
+  "ECART_TYPE_BRUIT_TOTAL": 10.0,
+  "N_INCOHERENCES_EXTERNES_NUITS": 15,
+  "N_OUTLIERS_NPS": 3,
+  "PCT_MANQUANTS": 0.05,
+  "N_DOUBLONS": 10,
+  "FICHIER_CSV_SORTIE": "sondage_hotel_data.csv",
+  "ENCODAGE_CSV": "utf-8-sig",
+  "SEPARATEUR_CSV": ";",
+  "FICHIER_RAPPORT_EXCEL": "rapport_validation_sondage_hotel.xlsx"
+}
