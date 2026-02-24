@@ -24,8 +24,12 @@ try:
     from docx.shared import Pt, Cm
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.shared import RGBColor
 except ImportError:
     raise ImportError("Module python-docx requis. Installer avec : pip install python-docx")
+
+# Couleur du texte pour garantir la visibilité (éviter texte invisible en thème sombre)
+COULEUR_TEXTE = RGBColor(0, 0, 0)
 
 
 def _repertoire():
@@ -34,12 +38,15 @@ def _repertoire():
 
 def _add_heading(doc, text, level=1):
     p = doc.add_heading(text, level=level)
+    for run in p.runs:
+        run.font.color.rgb = COULEUR_TEXTE
     return p
 
 
 def _add_para(doc, text, bold=False):
     p = doc.add_paragraph()
     run = p.add_run(text)
+    run.font.color.rgb = COULEUR_TEXTE
     if bold:
         run.bold = True
     return p
@@ -50,6 +57,13 @@ def run():
     doc = Document()
     rep = _repertoire()
     chemin_sortie = rep / FICHIER_WORD_SORTIE
+    # Forcer le style Normal : police noire, taille 11 pt (visibilité dans tous les lecteurs)
+    try:
+        style = doc.styles["Normal"]
+        style.font.color.rgb = COULEUR_TEXTE
+        style.font.size = Pt(11)
+    except Exception:
+        pass
 
     # ---- Titre ----
     _add_heading(doc, "Synthèse – Éléments d'apprentissage", level=0)
@@ -57,8 +71,26 @@ def run():
     _add_para(doc, "Ce document recense tous les éléments d'apprentissage que les étudiants peuvent réaliser avec le fichier de données généré, afin d'assurer la couverture complète des objectifs pédagogiques en analyse de sondage et prise de décision.")
     doc.add_paragraph()
 
-    # ---- 1. Présentation du jeu de données ----
-    _add_heading(doc, "1. Présentation du jeu de données", level=1)
+    # ---- 1. Synthèse du rapport de validation des analyses (en premier pour visibilité) ----
+    _add_heading(doc, "1. Synthèse du rapport de validation des analyses", level=1)
+    _add_para(doc, "Le rapport complet (RAPPORT_DETAILLE_VALIDATION_ANALYSES.md) est fourni avec ce livrable. Les chiffres ci-dessous ont été vérifiés sur le fichier sondage_hotel_data.csv (script verif_calculs_stats.py et module m10) : ils correspondent à l'analyse du fichier livré, et non à une simple reprise de modèle.", bold=False)
+    _add_para(doc, "Résultats attendus et lien avec la décision :", bold=True)
+    synthèse = [
+        "Proportions et IC 95 % : % annulées 18,7 %, Rev_Spa>0 52,3 %, Forfait Gastro 42,1 %. IC resserrés (n ≈ 10 500). → Objectifs réalistes, suivre les écarts.",
+        "Khi-deux (Segment × Type_Forfait) : χ² ≈ 2842, p ≈ 0. Liaison très forte (Loisirs → Gastronomique, Congressiste → Chambre seule). → Cibler l'offre par segment.",
+        "Pearson (Rev_Spa × Satisfaction_NPS) : en brut r ≈ 0,45 ; après nettoyage r ≈ 0,76. Dire aux étudiants « r ≈ 0,75 après nettoyage ». → Leviers satisfaction / fidélisation.",
+        "ANOVA (Rev_Resto par Segment) : F ≈ 10 363, p ≈ 0. Différences très significatives entre segments. → Allouer ressources restaurant par segment.",
+        "Régression (Total_Facture ~ Rev_Chambre + Rev_Resto + Rev_Spa) : coefficients ≈ 1,00 ; 1,08 ; 1,29, R² ≈ 0,9997. → Piloter structure des revenus.",
+        "Annulations par canal : Direct ~6,8 %, Intermédiaire ~30,5 %. → Risque OTA, développer le direct.",
+        "Anomalies pédagogiques : 15 Externes avec Nuits>0 ; 4 Annulee=Oui avec Nuits>0 ; 3 NPS=99 ; 5 % manquants Rev_Spa/Rev_Resto ; 10 doublons. → Nettoyage obligatoire avant analyse.",
+        "Tarification active : utiliser Saison_calendrier (pas Saison). Haute ~412 $, Basse ~265 $ (+55 %). Détail : Note_Saison_vs_Tarification_Dynamique.docx.",
+    ]
+    for s in synthèse:
+        _add_para(doc, f"  • {s}")
+    doc.add_paragraph()
+
+    # ---- 2. Présentation du jeu de données ----
+    _add_heading(doc, "2. Présentation du jeu de données", level=1)
     _add_para(doc, f"Fichier de travail : {FICHIER_CSV_REFERENCE}")
     _add_para(doc, "Contenu : Réservations simulées sur une année complète pour un hôtel de 100 chambres (taux d'occupation moyen 72 %, paramètre de la simulation). Le fichier contient environ 10 500 lignes (réservations) plus des lignes dupliquées volontaires pour l'exercice de nettoyage.")
     _add_para(doc, "Variables principales :")
@@ -84,8 +116,8 @@ def run():
         _add_para(doc, f"  • {nom} : {desc}")
     doc.add_paragraph()
 
-    # ---- 2. Éléments d'apprentissage (tableau) ----
-    _add_heading(doc, "2. Éléments d'apprentissage à réaliser avec le fichier", level=1)
+    # ---- 3. Éléments d'apprentissage (tableau) ----
+    _add_heading(doc, "3. Éléments d'apprentissage à réaliser avec le fichier", level=1)
     _add_para(doc, "Le tableau ci-dessous liste chaque technique ou objectif pédagogique, les variables à utiliser et le type de sortie attendu. Le professeur peut s'en servir pour construire les exercices ou vérifier que tous les éléments sont couverts.")
     doc.add_paragraph()
 
@@ -97,7 +129,9 @@ def run():
     hdr[2].text = "Objectif / Sortie attendue"
     hdr[3].text = "Coché"
     for cell in hdr:
-        cell.paragraphs[0].runs[0].bold = True
+        for r in cell.paragraphs[0].runs:
+            r.bold = True
+            r.font.color.rgb = COULEUR_TEXTE
 
     lignes = [
         ("Statistiques descriptives", "Toutes (effectifs, moyennes, écarts-types, min/max)", "Tableaux de synthèse par segment, Type_Client, Saison, Saison_calendrier, Annulee ; description des variables numériques (Nuits, Rev_*, Total_Facture, Satisfaction_NPS).", "☐"),
@@ -113,14 +147,16 @@ def run():
     ]
     for elem, vars_, objectif, coche in lignes:
         row = table.add_row()
-        row.cells[0].text = elem
-        row.cells[1].text = vars_
-        row.cells[2].text = objectif
-        row.cells[3].text = coche
+        for i, val in enumerate((elem, vars_, objectif, coche)):
+            cell = row.cells[i]
+            cell.text = val
+            for p in cell.paragraphs:
+                for r in p.runs:
+                    r.font.color.rgb = COULEUR_TEXTE
     doc.add_paragraph()
 
-    # ---- 3. Anomalies pédagogiques ----
-    _add_heading(doc, "3. Anomalies pédagogiques (pour l'exercice de nettoyage)", level=1)
+    # ---- 4. Anomalies pédagogiques ----
+    _add_heading(doc, "4. Anomalies pédagogiques (pour l'exercice de nettoyage)", level=1)
     _add_para(doc, "Le fichier contient volontairement les anomalies suivantes, à faire détecter et corriger par les étudiants :")
     anomalies = [
         "Incohérence logique : des clients « Externes » ont Nuits > 0 (une quinzaine de lignes).",
@@ -134,29 +170,10 @@ def run():
     _add_para(doc, "Après nettoyage, les analyses (proportions, régression, Pearson, etc.) peuvent être refaites pour comparer les résultats avec/sans anomalies.")
     doc.add_paragraph()
 
-    # ---- 4. Synthèse du rapport de validation des analyses ----
-    _add_heading(doc, "4. Synthèse du rapport de validation des analyses", level=1)
-    _add_para(doc, "Le document complet RAPPORT_DETAILLE_VALIDATION_ANALYSES.md est fourni avec ce livrable. Il détaille pour chaque technique : résultats, interprétation, leçons et lien avec la prise de décision. Ci-dessous, l'essentiel pour le professeur.", bold=False)
-    doc.add_paragraph()
-    _add_para(doc, "Résultats attendus (à utiliser pour cadrer les corrigés et les attentes) :", bold=True)
-    synthèse_validation = [
-        "Proportions & IC 95 % : % annulées 18,7 %, Rev_Spa>0 52,3 %, Forfait Gastro 42,1 %. IC resserrés (n ≈ 10 500). Décision : objectifs réalistes, suivre les écarts.",
-        "Khi-deux (Segment × Type_Forfait) : χ² ≈ 2842, p ≈ 0. Liaison très forte (Loisirs → Gastronomique, Congressiste → Chambre seule). Décision : cibler l'offre par segment.",
-        "Pearson (Rev_Spa × Satisfaction_NPS) : en brut r ≈ 0,45 ; après nettoyage r ≈ 0,76. Formuler « r ≈ 0,75 après nettoyage » (pas « avant anomalies »). Décision : leviers satisfaction / fidélisation.",
-        "ANOVA (Rev_Resto par Segment) : F ≈ 10 363, p ≈ 0. Différences très significatives (Local_Gourmet > Loisirs > Affaires > Congressiste > Local_Spa). Décision : allouer ressources restaurant par segment.",
-        "Régression (Total_Facture ~ Rev_Chambre + Rev_Resto + Rev_Spa) : coefficients ≈ 1,00 ; 1,08 ; 1,29, R² ≈ 0,9997. Cohérent avec le modèle 1 ; 1,1 ; 1,3. Décision : piloter structure des revenus.",
-        "Annulations par canal : Direct ~6,8 %, Intermédiaire ~30,5 %. Décision : risque OTA, développer le direct.",
-        "Anomalies pédagogiques : 15 Externes avec Nuits>0 ; 4 Annulee=Oui avec Nuits>0 ; 3 NPS=99 ; 5 % manquants Rev_Spa/Rev_Resto ; 10 doublons. Décision : nettoyage obligatoire avant analyse.",
-        "Tarification active : utiliser Saison_calendrier (pas Saison). Haute ~412 $, Basse ~265 $ (+55 %), p ≈ 0. Détail : Note_Saison_vs_Tarification_Dynamique.docx.",
-    ]
-    for s in synthèse_validation:
-        _add_para(doc, f"  • {s}")
-    doc.add_paragraph()
-
     # ---- 5. Checklist professeur ----
     _add_heading(doc, "5. Checklist – Éléments traités en cours / TD", level=1)
     _add_para(doc, "Le professeur peut cocher (manuellement dans ce document) les éléments d'apprentissage déjà traités avec les étudiants, afin de s'assurer que tous les objectifs du fichier sont couverts.")
-    _add_para(doc, "Les lignes du tableau de la section 2 contiennent une colonne « Coché » à cocher au fur et à mesure.")
+    _add_para(doc, "Les lignes du tableau de la section 3 contiennent une colonne « Coché » à cocher au fur et à mesure.")
     doc.add_paragraph()
     _add_para(doc, "— Fin du document —", bold=True)
 

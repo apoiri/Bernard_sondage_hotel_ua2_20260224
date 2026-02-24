@@ -10,6 +10,7 @@
 
 - Le fichier **sondage_hotel_data.csv** contient environ **10 500 réservations** simulées sur une année (variables : segment, canal, annulation, nuits, revenus chambre/resto/spa, forfait, satisfaction NPS, etc.).
 - Les analyses ci‑dessous ont été réalisées avec les **mêmes données** que celles livrées aux étudiants. Les résultats constatés sont **reproductibles** à partir du CSV (script `verif_calculs_stats.py` et module m10).
+- **Validation des chiffres :** les valeurs de ce rapport (proportions, Khi², Pearson, ANOVA, régression, taux d'annulation, anomalies) ont été **recalculées sur le fichier sondage_hotel_data.csv** et correspondent aux sorties de `verif_calculs_stats.py` et du module m10. Chaque résultat est aligné sur l'analyse du fichier sondage livré (pas une simple reprise de modèle).
 - Ce rapport détaille, pour **chaque technique** : les **résultats constatés**, une **interprétation**, les **leçons à retenir** et l’**information à tenir pour la prise de décision**. Il permet aux professeurs et au client de **valider la qualité et l’usage pédagogique** des données.
 
 ---
