@@ -12,3 +12,6 @@ __pycache__/
 .venv/
 venv/
 env/
+*.docx~
+# Fichiers verrou Word
+~$*

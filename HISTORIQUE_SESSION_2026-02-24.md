@@ -21,6 +21,7 @@
 | **Fichiers mis à jour par le pipeline** | Quand on lance `python3 run_pipeline.py`, **4 fichiers** sont mis à jour automatiquement : **config.json** (m01), **sondage_hotel_data.csv** (m09), **rapport_validation_sondage_hotel.xlsx** (m10), **synthese_elements_apprentissage_prof.docx** (m11). Le fichier **tableau_synthese_techniques_statistiques.xlsx** n’est **pas** généré par le pipeline ; il est produit par `python3 generer_tableau_synthese_excel.py`. |
 | **Données : fichier de base ou simulation** | Dans la version actuelle, **aucun fichier Excel ou CSV n’est lu en entrée**. Les données sont **générées de zéro** à partir de la config (m01) et des modules 2 à 8. Le module 9 écrit le tableau final en CSV. |
 | **Modifier des valeurs sans toucher à plusieurs modules** | **Un seul fichier à modifier** pour toutes les valeurs existantes (tarifs, taux, segments, canaux, NPS, anomalies, etc.) : **m01_config.py**. Les modules m02 à m11 lisent tout via `get_config()`. **Ajouter une nouvelle colonne ou une nouvelle analyse** nécessite en revanche plusieurs modules (au moins un qui génère la donnée, éventuellement m01 pour les paramètres, m10 pour le rapport), par structure du pipeline. |
+| **Où lancer le pipeline** | Lancer **depuis le Terminal macOS** (pas le terminal intégré de Cursor) pour que les fichiers (CSV, Excel, Word) soient bien mis à jour dans le dossier visible dans le Finder. Depuis le terminal de Cursor, les dates peuvent ne pas changer côté Finder. |
 
 ---
 
@@ -89,9 +90,28 @@ Les fichiers 1, 2 et 4 sont mis à jour par le pipeline ; le fichier 3 par le sc
 
 ---
 
-## 6. Pour reprendre le projet après cette session
+## 6. Évolution « tarification dynamique » (étapes 1 à 3 – 24 février 2026)
 
-- Ouvrir **ARCHIVE_PROJET_SONDAGE_HOTEL.md** et **HISTORIQUE_SESSION_2026-02-24.md** pour retrouver le contexte.
+Plan détaillé : **PLAN_ETAPES_MODIFICATIONS_SEQUENTIELLES.md** et **PLAN_EVOLUTION_TARIFICATION_DYNAMIQUE.md**.
+
+| Étape | Fichier / composant | Statut | Rôle |
+|-------|----------------------|--------|------|
+| 1 | **m00_config_etendue.py** | Validé et bloqué | Charge m01 + optionnellement config_tarification_dynamique.json ; expose `get_config_etendue()`. |
+| 2 | **config_tarification_dynamique_exemple.json**, **config_tarification_dynamique.json**, **SCHEMA_CONFIG_TARIFICATION.md** | Validé | Config JSON (types chambre, 12 taux occupation, sexe, revenus, pays/provinces/villes) ; schéma documenté. |
+| 3 | **m02b_types_chambre_calendrier.py** | Validé et bloqué | Lit config étendue ; expose `get_types_chambre()`, `get_coefficient_mois(mois)` ; coefficients de tarification par mois (forte occupation → coeff > 1). |
+| 4 | **m02c_reservations_avec_dates.py** | Validé et bloqué | Appelle m02.run() puis enrichit avec Mois_sejour, Sexe, Niveau_revenus, Pays, Province, Ville (config étendue). |
+| 5 | **m02d_allocation_chambres.py** | Validé et bloqué | Attribue Type_chambre et Numero_chambre à chaque réservation (m02b) ; garantit au moins 1 réservation par chambre ; expose `verifier_toutes_chambres_reservees(df)`. |
+| 6 | **m03b_revenus_chambre_dynamique.py** | Validé et bloqué | Calcule Rev_Chambre = Nuits × prix_base(type) × coefficient(mois), 0 si Externe/Annulée ; ajoute Tarif_applique ; appelle m03 si Nuits absent. |
+| 7 | **interface_config_tarification.py** | Validé | Script CLI : écrit config_tarification_dynamique.json (depuis exemple ou défaut) ; option --interactif pour saisie types chambre et 12 taux. Aucune modification des modules m00–m03b. |
+| 8 | **run_pipeline_evolution.py** | Validé | Pipeline : m01 → m02c→m02d→m03b→m04…m09 → m10 → m11 ; CSV avec Type_chambre, Numero_chambre, Sexe, Pays, Province, Ville, Rev_Chambre, Tarif_applique. |
+
+Tous ces fichiers sont soit dans **validated_modules.txt** (m00, m02b, m02c, m02d, m03b, interface, run_pipeline_evolution), soit considérés validés (JSON + schéma). Aucune modification des modules validés sans déblocage. Prochaines étapes : m02c, m02d, m03b, interface, intégration pipeline (voir plan).
+
+---
+
+## 7. Pour reprendre le projet après cette session
+
+- Ouvrir **ARCHIVE_PROJET_SONDAGE_HOTEL.md**, **HISTORIQUE_SESSION_2026-02-24.md** et, pour l’évolution tarification, **PLAN_ETAPES_MODIFICATIONS_SEQUENTIELLES.md**.
 - Pour modifier des valeurs : n’éditer que **m01_config.py**, puis lancer `python3 run_pipeline.py`.
 - Pour vérifier les calculs : lancer `python3 verif_calculs_stats.py` et comparer au rapport Excel.
 - En fin de session : **git add → commit → push** (voir COMMENT_UTILISER_GIT.txt).

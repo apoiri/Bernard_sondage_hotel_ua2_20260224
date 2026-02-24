@@ -1,0 +1,34 @@
+{
+  "types_chambre": [
+    {"nom": "Standard", "nb_chambres": 35, "prix_base": 180},
+    {"nom": "Supérieure", "nb_chambres": 25, "prix_base": 280},
+    {"nom": "Confort", "nb_chambres": 20, "prix_base": 350},
+    {"nom": "Luxe", "nb_chambres": 12, "prix_base": 420},
+    {"nom": "Suite", "nb_chambres": 8, "prix_base": 550}
+  ],
+  "taux_occupation_mois": [0.55, 0.52, 0.58, 0.62, 0.68, 0.75, 0.88, 0.85, 0.72, 0.65, 0.60, 0.58],
+  "repartition_sexe": {"M": 0.48, "F": 0.50, "Autre": 0.02},
+  "plages_revenus": [
+    {"libelle": "Faible", "min": 0, "max": 40000},
+    {"libelle": "Moyen", "min": 40000, "max": 80000},
+    {"libelle": "Élevé", "min": 80000, "max": 200000}
+  ],
+  "pays": [
+    {"code": "CA", "nom": "Canada", "poids": 0.45},
+    {"code": "US", "nom": "États-Unis", "poids": 0.35},
+    {"code": "EU", "nom": "Europe", "poids": 0.15},
+    {"code": "Autre", "nom": "Autre", "poids": 0.05}
+  ],
+  "provinces_par_pays": {
+    "CA": [{"code": "QC", "nom": "Québec", "poids": 0.5}, {"code": "ON", "nom": "Ontario", "poids": 0.35}, {"code": "Autre", "nom": "Autre", "poids": 0.15}],
+    "US": [{"code": "NY", "nom": "New York", "poids": 0.4}, {"code": "CA", "nom": "California", "poids": 0.3}, {"code": "Autre", "nom": "Autre", "poids": 0.3}],
+    "EU": [{"code": "FR", "nom": "France", "poids": 0.5}, {"code": "Autre", "nom": "Autre", "poids": 0.5}],
+    "Autre": [{"code": "XX", "nom": "—", "poids": 1.0}]
+  },
+  "villes_exemples": {
+    "QC": ["Montréal", "Québec", "Laval", "Gatineau"],
+    "ON": ["Toronto", "Ottawa", "Mississauga"],
+    "NY": ["New York", "Buffalo", "Rochester"],
+    "FR": ["Paris", "Lyon", "Marseille"]
+  }
+}

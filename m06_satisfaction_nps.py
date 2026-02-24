@@ -105,3 +105,6 @@ if __name__ == "__main__":
         print(f"\nCorrélation Pearson Rev_Spa – Satisfaction_NPS (Annulee=Non) : r = {r_obs:.3f} (cible ≈ {NPS_CORRELATION_REV_SPA})")
     print("\nStatistiques Satisfaction_NPS (Annulee=Non):")
     print(df.loc[mask, "Satisfaction_NPS"].describe().to_string())
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

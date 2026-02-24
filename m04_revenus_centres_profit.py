@@ -113,3 +113,6 @@ if __name__ == "__main__":
     print(df.loc[mask].groupby("Segment")["Rev_Resto"].agg(["mean", "count"]).round(2).to_string())
     print("\nMoyennes Rev_Spa par segment (Annulee=Non):")
     print(df.loc[mask].groupby("Segment")["Rev_Spa"].agg(["mean", "count"]).round(2).to_string())
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

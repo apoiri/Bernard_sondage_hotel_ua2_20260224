@@ -200,3 +200,6 @@ if __name__ == "__main__":
     print_hypotheses()
     out_path = save_config_json()
     print(f"Config sauvegardée dans : {out_path}")
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

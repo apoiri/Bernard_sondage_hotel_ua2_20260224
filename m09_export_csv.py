@@ -91,3 +91,6 @@ if __name__ == "__main__":
         num = ["Nuits", "Rev_Chambre", "Rev_Resto", "Rev_Spa", "Total_Facture", "Satisfaction_NPS"]
         num = [c for c in num if c in df.columns]
         print(df[num].agg(["min", "max"]).to_string())
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

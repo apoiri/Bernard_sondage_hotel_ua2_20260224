@@ -1,0 +1,165 @@
+{
+  "types_chambre": [
+    {
+      "nom": "Classique",
+      "nb_chambres": 65,
+      "prix_base": 289.0
+    },
+    {
+      "nom": "deluxe",
+      "nb_chambres": 20,
+      "prix_base": 314.0
+    },
+    {
+      "nom": "Suite junior",
+      "nb_chambres": 5,
+      "prix_base": 422.0
+    },
+    {
+      "nom": "Suite senior",
+      "nb_chambres": 5,
+      "prix_base": 575.0
+    },
+    {
+      "nom": "Suite exécutive",
+      "nb_chambres": 5,
+      "prix_base": 818.0
+    }
+  ],
+  "taux_occupation_mois": [
+    0.62,
+    0.68,
+    0.74,
+    0.77,
+    0.77,
+    0.84,
+    0.82,
+    0.87,
+    0.8,
+    0.77,
+    0.71,
+    0.58
+  ],
+  "repartition_sexe": {
+    "M": 0.48,
+    "F": 0.5,
+    "Autre": 0.02
+  },
+  "plages_revenus": [
+    {
+      "libelle": "Faible",
+      "min": 50000,
+      "max": 100000
+    },
+    {
+      "libelle": "Moyen",
+      "min": 100000,
+      "max": 150000
+    },
+    {
+      "libelle": "Élevé",
+      "min": 150000,
+      "max": 500000
+    }
+  ],
+  "pays": [
+    {
+      "code": "CA",
+      "nom": "Canada",
+      "poids": 0.45
+    },
+    {
+      "code": "US",
+      "nom": "États-Unis",
+      "poids": 0.35
+    },
+    {
+      "code": "EU",
+      "nom": "Europe",
+      "poids": 0.15
+    },
+    {
+      "code": "Autre",
+      "nom": "Autre",
+      "poids": 0.05
+    }
+  ],
+  "provinces_par_pays": {
+    "CA": [
+      {
+        "code": "QC",
+        "nom": "Québec",
+        "poids": 0.5
+      },
+      {
+        "code": "ON",
+        "nom": "Ontario",
+        "poids": 0.35
+      },
+      {
+        "code": "Autre",
+        "nom": "Autre",
+        "poids": 0.15
+      }
+    ],
+    "US": [
+      {
+        "code": "NY",
+        "nom": "New York",
+        "poids": 0.4
+      },
+      {
+        "code": "CA",
+        "nom": "California",
+        "poids": 0.3
+      },
+      {
+        "code": "Autre",
+        "nom": "Autre",
+        "poids": 0.3
+      }
+    ],
+    "EU": [
+      {
+        "code": "FR",
+        "nom": "France",
+        "poids": 0.5
+      },
+      {
+        "code": "Autre",
+        "nom": "Autre",
+        "poids": 0.5
+      }
+    ],
+    "Autre": [
+      {
+        "code": "XX",
+        "nom": "—",
+        "poids": 1.0
+      }
+    ]
+  },
+  "villes_exemples": {
+    "QC": [
+      "Montréal",
+      "Québec",
+      "Laval",
+      "Gatineau"
+    ],
+    "ON": [
+      "Toronto",
+      "Ottawa",
+      "Mississauga"
+    ],
+    "NY": [
+      "New York",
+      "Buffalo",
+      "Rochester"
+    ],
+    "FR": [
+      "Paris",
+      "Lyon",
+      "Marseille"
+    ]
+  }
+}

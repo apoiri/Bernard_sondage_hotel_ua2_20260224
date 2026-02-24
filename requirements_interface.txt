@@ -1,0 +1,2 @@
+# Dépendances pour l'interface utilisateur Streamlit (config tarification dynamique)
+streamlit>=1.28.0

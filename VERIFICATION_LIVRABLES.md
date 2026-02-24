@@ -37,10 +37,12 @@ Résultat attendu : **11** (les 11 modules).
 
 **Ce qui doit être fait** : Une seule commande exécute tous les modules (m01 → m09 → m10 → m11), produit les livrables (config.json, sondage_hotel_data.csv, rapport Excel, document Word), puis vérifie la règle de blocage et la présence des fichiers de sortie.
 
-**Comment lancer (Terminal, depuis le dossier du projet) :**
+**Comment lancer :** Depuis le **Terminal macOS** (pas le terminal intégré de Cursor), dans le dossier du projet :
 ```bash
+cd "/Users/alainpoirier/Desktop/Bernard_sondage_hotel_ua2_20260224"
 python3 run_pipeline.py
 ```
+Ou lancer `bash regenerer_livrables.sh` dans le même dossier. Exécuter depuis le terminal de Cursor peut ne pas mettre à jour les dates des fichiers dans le Finder.
 
 **Résultat attendu** : Code de sortie **0**, message final « [OK] Pipeline terminé avec succès. Toutes les vérifications sont passées. »
 

@@ -231,3 +231,6 @@ if __name__ == "__main__":
     print(f"  Fichier Excel sortie = {FICHIER_EXCEL_SORTIE}")
     print("=" * 60)
     run()
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

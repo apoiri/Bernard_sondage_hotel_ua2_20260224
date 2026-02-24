@@ -89,3 +89,6 @@ if __name__ == "__main__":
     print(df.loc[mask, "Nuits"].describe().to_string())
     print("\nStatistiques Rev_Chambre (idem):")
     print(df.loc[mask, "Rev_Chambre"].describe().to_string())
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

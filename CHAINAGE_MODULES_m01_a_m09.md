@@ -8,12 +8,14 @@ Ce document décrit **l’essentiel du traitement** effectué à chaque module p
 
 ## Vue d’ensemble du flux
 
+**Pipeline classique** (run_pipeline.py) :
 ```
 m01 (config)  →  m02  →  m03  →  m04  →  m05  →  m06  →  m07  →  m08  →  m09 (export CSV)
      │            │       │       │       │       │       │       │            │
   paramètres   base    nuits   revenus  forfait  NPS   facture  anomalies   sondage_hotel_data.csv
                table   chambre  resto/spa          total
 ```
+**Pipeline évolution** (run_pipeline_evolution.py) : m02c → m02d → m03b puis m04…m09 (types chambre, mois, sexe, pays, tarif dynamique). Voir section *Pipeline évolution* en fin de document.
 
 ---
 
@@ -168,3 +170,26 @@ Dans le code actuel, **aucun fichier Excel ou CSV n’est lu** pour construire l
 2. **m02** : la **génération aléatoire** du tableau de réservations à partir de cette config.
 
 Si, au tout début du projet, un fichier Excel/CSV avait été fourni, il a été remplacé par cette chaîne de simulation (m01 → m09). Pour obtenir un nouveau `sondage_hotel_data.csv`, il suffit de lancer le pipeline (ou m09 après m01) : le fichier est alors **régénéré** entièrement à partir de la config et des modules 2 à 8.
+
+---
+
+## Pipeline évolution (tarification dynamique)
+
+Une **deuxième chaîne** permet d’obtenir un CSV enrichi avec **types de chambre**, **mois de séjour**, **sexe**, **revenus**, **pays/province/ville** et **tarification dynamique** (prix selon le type de chambre et le mois). Script : **run_pipeline_evolution.py**.
+
+**Flux :**
+```
+m01  →  m00 (config étendue)  →  m02b (calendrier)  →  m02c  →  m02d  →  m03b  →  m04 … m08  →  m09
+       config_tarification_dynamique.json    types + coeffs   enrichi   allocation  Rev_Chambre dynamique
+```
+
+**Modules supplémentaires :**
+- **m00** : charge m01 + `config_tarification_dynamique.json` (types chambre, 12 taux, sexe, revenus, pays).
+- **m02b** : types de chambre et coefficient de prix par mois (forte occupation → coefficient > 1).
+- **m02c** : appelle m02 puis ajoute **Mois_sejour**, **Sexe**, **Niveau_revenus**, **Pays**, **Province**, **Ville**.
+- **m02d** : ajoute **Type_chambre** et **Numero_chambre** (chaque chambre au moins 1 réservation).
+- **m03b** : **Rev_Chambre** = Nuits × prix_base(type) × coefficient(mois), 0 si Externe/Annulée ; **Tarif_applique**.
+
+**Colonnes supplémentaires dans le CSV :** Mois_sejour, Sexe, Niveau_revenus, Pays, Province, Ville, Type_chambre, Numero_chambre, Tarif_applique (Rev_Chambre est recalculé par m03b).
+
+**Interface :** Pour modifier les valeurs (types de chambre, taux, sexe, pays, etc.) : **interface_streamlit_config.py** (`streamlit run interface_streamlit_config.py` ou `./lancer_interface_chrome.sh`). Enregistrement vers `config_tarification_dynamique.json`, puis `python3 run_pipeline_evolution.py` pour régénérer le CSV.

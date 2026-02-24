@@ -148,3 +148,6 @@ if __name__ == "__main__":
         out_path = Path(__file__).parent / "etape2_segments.csv"
         df.to_csv(out_path, index=False, encoding="utf-8-sig", sep=";")
         print(f"\nSauvegardé : {out_path}")
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

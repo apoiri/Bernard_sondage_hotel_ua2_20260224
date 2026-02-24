@@ -83,3 +83,6 @@ if __name__ == "__main__":
         lambda x: (x == "Forfait Gastronomique").mean() * 100
     ).round(1)
     print(pct.to_string())
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

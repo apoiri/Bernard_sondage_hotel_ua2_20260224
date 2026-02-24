@@ -34,7 +34,7 @@ FICHIERS_SORTIE_ATTENDUS = [
     "synthese_elements_apprentissage_prof.docx",
 ]
 
-NOMBRE_MODULES_AVEC_REGLE_BLOCAGE = 11  # m01..m11
+NOMBRE_MODULES_AVEC_REGLE_BLOCAGE = 14  # m01..m11 + m02b, m02c, m02d, m03b
 
 
 def run_module(script: str) -> int:
@@ -48,7 +48,7 @@ def run_module(script: str) -> int:
 
 
 def verifier_regle_blocage() -> bool:
-    """Vérifie que les 11 modules contiennent la RÈGLE DE BLOCAGE."""
+    """Vérifie que les modules m*.py contiennent la RÈGLE DE BLOCAGE."""
     import glob
     pattern = str(REP_PROJET / "m*.py")
     fichiers = sorted(glob.glob(pattern))
@@ -96,6 +96,17 @@ def main() -> int:
     if not ok_blocage or not ok_sortie:
         print("\n[ÉCHEC] Une ou plusieurs vérifications ont échoué.")
         return 1
+
+    # Preuve : chemin et date du CSV généré
+    import os
+    from datetime import datetime
+    chemin_csv = REP_PROJET / "sondage_hotel_data.csv"
+    if chemin_csv.exists():
+        mtime = os.path.getmtime(chemin_csv)
+        date_modif = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+        print("\n--- Fichier CSV généré ---")
+        print(f"  Chemin : {chemin_csv.resolve()}")
+        print(f"  Dernière modification : {date_modif}")
 
     print("\n[OK] Pipeline terminé avec succès. Toutes les vérifications sont passées.")
     return 0

@@ -38,6 +38,8 @@ Cursor ne retient pas les discussions entre les sessions. Si tu changes de répe
 | Histoire de ce qui a été développé (modules 1–11) | **HISTOIRE_DEVELOPPEMENT_SONDAGE_HOTEL.md** |
 | Chaînage m01→m09, qui génère le CSV | **CHAINAGE_MODULES_m01_a_m09.md** |
 | Modifier des valeurs (un seul fichier : m01) | **MODE_FONCTIONNEMENT_MODIFICATIONS.md** |
+| Évolution tarification dynamique (m00, m02b, étapes suivantes) | **PLAN_ETAPES_MODIFICATIONS_SEQUENTIELLES.md**, **PLAN_EVOLUTION_TARIFICATION_DYNAMIQUE.md** |
+| Modifier la config tarification (interface graphique) | **INTERFACE_UTILISATEUR.md** ; lancer `streamlit run interface_streamlit_config.py` |
 | Livrables à remettre au client | **SYNTHESE_LIVRABLES_CLIENT.md** |
 | Spec détaillée, modules, verrouillage | **PLAN_DEVELOPPEMENT_SONDAGE_HOTEL_MODULES.md** |
 | Commandes Git et push (sauvegarde) | **COMMENT_UTILISER_GIT.txt** |
@@ -92,9 +94,18 @@ Après une session de travail : **add → commit → push** (voir COMMENT_UTILIS
 | Fichier | Rôle | Statut |
 |---------|------|--------|
 | **PLAN_DEVELOPPEMENT_SONDAGE_HOTEL_MODULES.md** | Plan officiel du projet (spec, modules, verrouillage). Référence pour toute évolution. | Document maître |
+| **PLAN_ETAPES_MODIFICATIONS_SEQUENTIELLES.md** | Plan étape par étape pour l’évolution « tarification dynamique » (m00, m02b, m02c, m02d, m03b, interface, pipeline). | Référence évolution |
+| **m00_config_etendue.py** | Config étendue : charge m01 + config_tarification_dynamique.json ; expose `get_config_etendue()`. | Bloqué |
 | **m01_config.py** | Configuration : 100 chambres, 72 %, segments, annulations, canaux, formules, anomalies. Sortie : `get_config()`, `config.json`. | Bloqué |
 | **m02_segments.py** | Génération ID_Client, Segment, Type_Client, Saison, Canal_reservation, Type_canal, Annulee. | Bloqué |
+| **m02b_types_chambre_calendrier.py** | Types de chambre et coefficients de tarification par mois (à partir de la config étendue). Expose `get_types_chambre()`, `get_coefficient_mois(mois)`. | Bloqué |
+| **m02c_reservations_avec_dates.py** | Enrichit les réservations (m02) avec Mois_sejour, Sexe, Niveau_revenus, Pays, Province, Ville (config étendue). | Bloqué |
+| **m02d_allocation_chambres.py** | Attribue Type_chambre et Numero_chambre à chaque réservation ; contrôle « toutes chambres réservées au moins 1 fois ». | Bloqué |
 | **m03_nuits_chambre.py** | Nuits (Poisson si Interne non annulé), Rev_Chambre. | Bloqué |
+| **m03b_revenus_chambre_dynamique.py** | Rev_Chambre (tarification dynamique : prix_base × coefficient mois) ; Tarif_applique ; 0 si Externe/Annulée. | Bloqué |
+| **interface_config_tarification.py** | Interface CLI pour générer config_tarification_dynamique.json ; option --interactif. | Bloqué |
+| **interface_streamlit_config.py** | Interface utilisateur (Streamlit) : formulaires pour modifier types chambre, 12 taux, sexe, revenus, pays, puis export JSON. Voir **INTERFACE_UTILISATEUR.md**. | Bloqué |
+| **run_pipeline_evolution.py** | Pipeline évolution : m01 → m02c→m02d→m03b→m04…m09 → m10 → m11 ; CSV avec colonnes tarification dynamique. | Bloqué |
 | **m04_revenus_centres_profit.py** | Rev_Banquet, Rev_Resto, Rev_Spa (par segment ; ANOVA sur Rev_Resto). | Bloqué |
 | **m05_type_forfait.py** | Type_Forfait (Forfait Gastronomique / Chambre Seule) pour Khi-deux. | Bloqué |
 | **m06_satisfaction_nps.py** | Satisfaction_NPS (formule + corrélation avec Rev_Spa) ; NaN si Annulee = Oui. | Bloqué |
@@ -102,7 +113,7 @@ Après une session de travail : **add → commit → push** (voir COMMENT_UTILIS
 | **m08_anomalies_pedagogiques.py** | Anomalies : 15 Externes Nuits>0, 3 NPS=99, 5 % manquants, 10 doublons. | Bloqué |
 | **m09_export_csv.py** | Types de données, export **sondage_hotel_data.csv**. | Bloqué |
 | **m10_rapport_validation.py** | Analyses statistiques complètes ; sortie **terminal** + **rapport_validation_sondage_hotel.xlsx**. | Bloqué |
-| **m11_synthese_word_prof.py** | Synthèse **Word** pour le professeur : éléments d’apprentissage, variables, anomalies, checklist. Sortie : **synthese_elements_apprentissage_prof.docx**. | En cours |
+| **m11_synthese_word_prof.py** | Synthèse **Word** pour le professeur : éléments d’apprentissage, variables, anomalies, checklist. Sortie : **synthese_elements_apprentissage_prof.docx**. | Bloqué |
 | **config.json** | Config exportée (générée par m01_config.py). | Dépend de m01 |
 | **sondage_hotel_data.csv** | Fichier de travail pour les étudiants (généré par m09). | Produit par pipeline |
 | **rapport_validation_sondage_hotel.xlsx** | Rapport de validation (généré par m10). | Produit par pipeline |

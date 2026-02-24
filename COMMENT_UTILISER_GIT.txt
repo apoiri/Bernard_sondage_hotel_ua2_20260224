@@ -27,6 +27,26 @@ mais tu n’as pas de sauvegarde en ligne = risque de tout recommencer à zéro
 si tu ouvres un autre projet ou un nouveau répertoire.
 
 ================================================================================
+QUAND TU REVIENS SUR LE PROJET (reprise – ne jamais repartir à zéro)
+================================================================================
+
+Cursor ne garde pas la mémoire des discussions. Quand tu réactives une station
+ou rouvres le projet :
+
+  1. Ouvre dans Cursor le dossier du projet :
+     Bernard_sondage_hotel_ua2_20260224
+
+  2. Dans le Terminal :
+     cd "/Users/alainpoirier/Desktop/Bernard_sondage_hotel_ua2_20260224"
+     git pull origin main
+
+  3. Ouvre le fichier ARCHIVE_PROJET_SONDAGE_HOTEL.md (section 1 = contexte
+     et checklist reprise). Donne ce fichier à l’assistant Cursor pour qu’il
+     retrouve le contexte du projet.
+
+  4. Après ta session : add → commit → push (étapes 3 et 4 ci-dessus).
+
+================================================================================
 Dépôt GitHub de ce projet :
   https://github.com/apoiri/Bernard_sondage_hotel_ua2_20260224
 ================================================================================

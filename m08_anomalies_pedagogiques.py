@@ -104,3 +104,6 @@ if __name__ == "__main__":
     print(f"  Manquants Rev_Spa       : {manq_spa} (~{PCT_MANQUANTS*100:.0f} %)")
     print(f"  Manquants Rev_Resto     : {manq_resto} (~{PCT_MANQUANTS*100:.0f} %)")
     print(f"  Doublons (lignes en plus): {len(df) - get_config()['N_RESERVATIONS']} (attendu {N_DOUBLONS})")
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.

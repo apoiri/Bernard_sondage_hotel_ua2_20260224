@@ -75,3 +75,6 @@ if __name__ == "__main__":
     diff = (df["Total_Facture"] - attendu).describe()
     print("\nDifférence (Total_Facture - formule sans ε) – doit être proche de 0 en moyenne:")
     print(diff.to_string())
+
+# ========== RÈGLE DE BLOCAGE ==========
+# Aucune modification de ce module n'est acceptée sans l'autorisation du maître d'ouvrage du projet.
