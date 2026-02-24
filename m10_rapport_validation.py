@@ -44,7 +44,7 @@ def _run_analyses(df):
     n_non_annule = mask_non_annule.sum()
 
     # --- 1. Statistiques descriptives ---
-    num_cols = ["Nuits", "Rev_Chambre", "Rev_Resto", "Rev_Spa", "Total_Facture", "Satisfaction_NPS"]
+    num_cols = ["Nuits", "Rev_Chambre", "Rev_Banquet", "Rev_Resto", "Rev_Spa", "Total_Facture", "Satisfaction_NPS"]
     num_cols = [c for c in num_cols if c in df.columns]
     desc = df[num_cols].describe().round(4)
     effectifs_segment = df["Segment"].value_counts().sort_index()
@@ -87,18 +87,23 @@ def _run_analyses(df):
         moy_resto = pd.DataFrame()
     res["anova"] = {"f": f_anova, "p_value": p_anova, "moyennes": moy_resto}
 
-    # --- 6. Régression Total_Facture ~ Rev_Chambre + Rev_Resto + Rev_Spa ---
-    reg_df = df[["Total_Facture", "Rev_Chambre", "Rev_Resto", "Rev_Spa"]].dropna()
-    if len(reg_df) >= 4:
+    # --- 6. Régression Total_Facture ~ toutes les sources (Rev_Chambre, Rev_Banquet si présent, Rev_Resto, Rev_Spa) ---
+    reg_cols = ["Rev_Chambre"]
+    if "Rev_Banquet" in df.columns:
+        reg_cols.append("Rev_Banquet")
+    reg_cols += ["Rev_Resto", "Rev_Spa"]
+    reg_df = df[["Total_Facture"] + reg_cols].dropna()
+    if len(reg_df) >= len(reg_cols) + 1:
         y = reg_df["Total_Facture"].values
-        X = reg_df[["Rev_Chambre", "Rev_Resto", "Rev_Spa"]].values
+        X = reg_df[reg_cols].values
         X1 = np.column_stack([np.ones(len(X)), X])
         beta, _, _, _ = np.linalg.lstsq(X1, y, rcond=None)
         y_pred = X1 @ beta
         r2 = 1 - np.sum((y - y_pred) ** 2) / np.sum((y - y.mean()) ** 2) if np.sum((y - y.mean()) ** 2) > 0 else 0
-        res["regression"] = {"constante": beta[0], "coef_chambre": beta[1], "coef_resto": beta[2], "coef_spa": beta[3], "r2": r2, "n": len(reg_df)}
+        coefs = dict(zip(reg_cols, beta[1:]))
+        res["regression"] = {"constante": beta[0], "coefs": coefs, "reg_cols": reg_cols, "r2": r2, "n": len(reg_df)}
     else:
-        res["regression"] = {"constante": np.nan, "coef_chambre": np.nan, "coef_resto": np.nan, "coef_spa": np.nan, "r2": np.nan, "n": len(reg_df)}
+        res["regression"] = {"constante": np.nan, "coefs": {}, "reg_cols": reg_cols, "r2": np.nan, "n": len(reg_df)}
 
     # --- 7. Annulations par canal ---
     taux_annule_direct = (df["Type_canal"] == "Direct") & (df["Annulee"] == "Oui")
@@ -123,6 +128,69 @@ def _run_analyses(df):
     n_unique = df.drop_duplicates().shape[0]
     n_doublons = n_total - n_unique
     res["qualite"] = {"incoherences": incoh, "nps_99": nps99, "manquants_spa": manq_spa, "manquants_resto": manq_resto, "pct_manq_spa": pct_manq_spa, "pct_manq_resto": pct_manq_resto, "doublons": n_doublons}
+
+    # --- 9. Lien Spa × Sexe (si colonne Sexe présente) : situation accrue ou moindre des services spa selon le sexe ---
+    if "Sexe" in df.columns:
+        by_sexe = df.groupby("Sexe").agg(
+            Effectif=("Rev_Spa", "count"),
+            Moyenne_Rev_Spa=("Rev_Spa", "mean"),
+            Somme_Rev_Spa=("Rev_Spa", "sum"),
+        ).round(2)
+        total_rev_spa = by_sexe["Somme_Rev_Spa"].sum()
+        if total_rev_spa > 0:
+            by_sexe["Pct_du_total_Rev_Spa"] = (100 * by_sexe["Somme_Rev_Spa"] / total_rev_spa).round(1)
+        else:
+            by_sexe["Pct_du_total_Rev_Spa"] = 0.0
+        pct_avec_spa = (df["Rev_Spa"] > 0).groupby(df["Sexe"]).mean() * 100
+        by_sexe["Pct_avec_Rev_Spa_gt_0"] = pct_avec_spa.reindex(by_sexe.index).round(1)
+        groups_sexe = [df.loc[df["Sexe"] == s, "Rev_Spa"].dropna().values for s in by_sexe.index]
+        groups_sexe = [g for g in groups_sexe if len(g) >= 2]
+        if len(groups_sexe) >= 2:
+            f_spa_sexe, p_spa_sexe = stats.f_oneway(*groups_sexe)
+        else:
+            f_spa_sexe, p_spa_sexe = np.nan, np.nan
+        res["spa_sexe"] = {"table": by_sexe, "anova_f": f_spa_sexe, "anova_p": p_spa_sexe}
+    else:
+        res["spa_sexe"] = None
+
+    # --- 10. Tarification dynamique : validation base mensuelle et base saison ---
+    if all(c in df.columns for c in ["Mois_sejour", "Saison_calendrier", "Tarif_applique"]):
+        mask_tarif = (df["Type_Client"] == "Interne") & (df["Annulee"] == "Non") & (df["Tarif_applique"] > 0)
+        sub = df.loc[mask_tarif].copy()
+        if len(sub) >= 10:
+            sub["Mois_sejour"] = pd.to_numeric(sub["Mois_sejour"], errors="coerce")
+            sub = sub.dropna(subset=["Mois_sejour"])
+            sub["Mois_sejour"] = sub["Mois_sejour"].astype(int)
+            # Base mensuelle : Tarif_applique moyen par Mois_sejour
+            by_mois = sub.groupby("Mois_sejour").agg(
+                Effectif=("Tarif_applique", "count"),
+                Moyenne_Tarif_applique=("Tarif_applique", "mean"),
+            ).round(2)
+            groups_mois = [sub.loc[sub["Mois_sejour"] == m, "Tarif_applique"].values for m in by_mois.index]
+            groups_mois = [g for g in groups_mois if len(g) >= 2]
+            if len(groups_mois) >= 2:
+                f_mois, p_mois = stats.f_oneway(*groups_mois)
+            else:
+                f_mois, p_mois = np.nan, np.nan
+            # Base saison : Tarif_applique moyen par Saison_calendrier
+            by_saison = sub.groupby("Saison_calendrier").agg(
+                Effectif=("Tarif_applique", "count"),
+                Moyenne_Tarif_applique=("Tarif_applique", "mean"),
+            ).round(2)
+            groups_saison = [sub.loc[sub["Saison_calendrier"] == s, "Tarif_applique"].values for s in by_saison.index]
+            groups_saison = [g for g in groups_saison if len(g) >= 2]
+            if len(groups_saison) >= 2:
+                f_saison, p_saison = stats.f_oneway(*groups_saison)
+            else:
+                f_saison, p_saison = np.nan, np.nan
+            res["tarif_dynamique"] = {
+                "mensuelle": {"table": by_mois, "anova_f": f_mois, "anova_p": p_mois},
+                "saison": {"table": by_saison, "anova_f": f_saison, "anova_p": p_saison},
+            }
+        else:
+            res["tarif_dynamique"] = None
+    else:
+        res["tarif_dynamique"] = None
 
     return res
 
@@ -153,10 +221,20 @@ def _print_rapport(res):
     print(f"  F = {res['anova']['f']:.2f}  p-value = {res['anova']['p_value']:.4f}")
     print("  Verdict : OK (segments diffèrent)" if res["anova"]["p_value"] < 0.05 else "  Verdict : À vérifier")
 
-    print("\n--- 6. Régression (Total_Facture ~ Rev_Chambre + Rev_Resto + Rev_Spa) ---")
+    print("\n--- 6. Régression (Total_Facture ~ toutes sources : Rev_Chambre + Rev_Banquet + Rev_Resto + Rev_Spa) ---")
     r = res["regression"]
-    print(f"  Constante ≈ {r['constante']:.2f}  coef Rev_Chambre ≈ {r['coef_chambre']:.2f}  Rev_Resto ≈ {r['coef_resto']:.2f}  Rev_Spa ≈ {r['coef_spa']:.2f}  R² = {r['r2']:.4f}")
-    print("  Verdict : OK (coefficients ≈ 1 ; 1,1 ; 1,3)" if (0.9 <= r["coef_chambre"] <= 1.1 and 1.0 <= r["coef_resto"] <= 1.2 and 1.2 <= r["coef_spa"] <= 1.4) else "  Verdict : À vérifier")
+    coef_str = "  Constante ≈ {:.2f}".format(r["constante"])
+    for col in r["reg_cols"]:
+        v = r["coefs"].get(col, np.nan)
+        coef_str += "  {} ≈ {:.2f}".format(col, v)
+    coef_str += "  R² = {:.4f}".format(r["r2"])
+    print(coef_str)
+    c = r["coefs"]
+    ok_ch = 0.9 <= c.get("Rev_Chambre", 0) <= 1.1
+    ok_banquet = (c.get("Rev_Banquet", 1) is None or 0.9 <= c.get("Rev_Banquet", 1) <= 1.1) if "Rev_Banquet" in r["reg_cols"] else True
+    ok_resto = 1.0 <= c.get("Rev_Resto", 0) <= 1.2
+    ok_spa = 1.2 <= c.get("Rev_Spa", 0) <= 1.4
+    print("  Verdict : OK (coefficients ≈ 1 pour Chambre/Banquet ; 1,1 Resto ; 1,3 Spa)" if (ok_ch and ok_banquet and ok_resto and ok_spa) else "  Verdict : À vérifier")
 
     print("\n--- 7. Annulations par canal ---")
     print(f"  Taux annulation Direct       : {res['annulations']['taux_direct']*100:.1f} % (attendu ~7 %)")
@@ -167,6 +245,31 @@ def _print_rapport(res):
     q = res["qualite"]
     print(f"  Externes avec Nuits > 0 : {q['incoherences']}  |  NPS = 99 : {q['nps_99']}  |  Manquants Rev_Spa : {q['manquants_spa']} ({q['pct_manq_spa']:.1f} %)  |  Rev_Resto : {q['manquants_resto']} ({q['pct_manq_resto']:.1f} %)  |  Doublons : {q['doublons']}")
     print("  Verdict : OK (anomalies présentes pour exercice nettoyage)" if q["incoherences"] >= 10 and q["nps_99"] >= 1 and q["doublons"] >= 1 else "  Verdict : À vérifier")
+
+    if res.get("spa_sexe") is not None:
+        print("\n--- 9. Lien Spa × Sexe (situation accrue ou moindre des services spa selon le sexe) ---")
+        ss = res["spa_sexe"]
+        print(ss["table"].to_string())
+        print(f"  ANOVA Rev_Spa par Sexe : F = {ss['anova_f']:.2f}  p-value = {ss['anova_p']:.4f}")
+        print("  Interprétation : les revenus spa diffèrent significativement selon le sexe (situation accrue pour un groupe, moindre pour d'autres)." if ss["anova_p"] < 0.05 else "  Interprétation : à vérifier (pas de différence significative au seuil 5 %).")
+
+    if res.get("tarif_dynamique") is not None:
+        print("\n--- 10. Tarification dynamique (validation base mensuelle et base saison) ---")
+        td = res["tarif_dynamique"]
+        print("  Base mensuelle (Tarif_applique moyen par Mois_sejour, réservations Interne non annulées) :")
+        print(td["mensuelle"]["table"].to_string())
+        print(f"  ANOVA Tarif_applique par Mois_sejour : F = {td['mensuelle']['anova_f']:.2f}  p-value = {td['mensuelle']['anova_p']:.4f}")
+        verdict_m = "  Verdict mensuelle : OK — tarification dynamique pratiquée sur base mensuelle (écart significatif entre mois)." if td["mensuelle"]["anova_p"] < 0.05 else "  Verdict mensuelle : À vérifier (pas d'écart significatif entre mois)."
+        print(verdict_m)
+        print("  Base saison (Tarif_applique moyen par Saison_calendrier) :")
+        print(td["saison"]["table"].to_string())
+        print(f"  ANOVA Tarif_applique par Saison_calendrier : F = {td['saison']['anova_f']:.2f}  p-value = {td['saison']['anova_p']:.4f}")
+        t_saison = td["saison"]["table"]
+        haute = t_saison.loc["Haute", "Moyenne_Tarif_applique"] if "Haute" in t_saison.index else 0
+        basse = t_saison.loc["Basse", "Moyenne_Tarif_applique"] if "Basse" in t_saison.index else 0
+        verdict_s = "  Verdict saison : OK — tarification dynamique pratiquée sur base saison (Haute > Basse, écart significatif)." if (td["saison"]["anova_p"] < 0.05 and haute > basse) else "  Verdict saison : À vérifier (écart non significatif ou Haute ≤ Basse)."
+        print(verdict_s)
+
     print("=" * 60)
 
 
@@ -193,13 +296,24 @@ def _export_excel(res, df, chemin_excel):
             res["anova"]["moyennes"].to_excel(w, sheet_name="ANOVA_Moyennes")
         pd.DataFrame({"F": [res["anova"]["f"]], "p_value": [res["anova"]["p_value"]]}).to_excel(w, sheet_name="ANOVA_Resultat", index=False)
         r = res["regression"]
-        coef_vals = [r["constante"], r["coef_chambre"], r["coef_resto"], r["coef_spa"]]
-        pd.DataFrame({"Coefficient": ["Constante", "Rev_Chambre", "Rev_Resto", "Rev_Spa"], "Valeur": coef_vals}).to_excel(w, sheet_name="Regression", index=False)
+        noms_coef = ["Constante"] + r["reg_cols"]
+        coef_vals = [r["constante"]] + [r["coefs"].get(col, np.nan) for col in r["reg_cols"]]
+        pd.DataFrame({"Coefficient": noms_coef, "Valeur": coef_vals}).to_excel(w, sheet_name="Regression", index=False)
         pd.DataFrame({"R2": [r["r2"]], "n": [r["n"]]}).to_excel(w, sheet_name="Regression_R2", index=False)
         res["annulations_table"].to_excel(w, sheet_name="Annulations_Canal")
         pd.DataFrame({"Taux_Direct": [res["annulations"]["taux_direct"]], "Taux_Intermediaire": [res["annulations"]["taux_inter"]]}).to_excel(w, sheet_name="Annulations_Resume", index=False)
         q = res["qualite"]
         pd.DataFrame({"Anomalie": ["Externes Nuits>0", "NPS=99", "Manquants Rev_Spa", "Manquants Rev_Resto", "Doublons"], "Valeur": [q["incoherences"], q["nps_99"], q["manquants_spa"], q["manquants_resto"], q["doublons"]]}).to_excel(w, sheet_name="Qualite", index=False)
+        if res.get("spa_sexe") is not None:
+            ss = res["spa_sexe"]
+            ss["table"].to_excel(w, sheet_name="Spa_par_sexe")
+            pd.DataFrame({"F_ANOVA": [ss["anova_f"]], "p_value": [ss["anova_p"]]}).to_excel(w, sheet_name="Spa_sexe_ANOVA", index=False)
+        if res.get("tarif_dynamique") is not None:
+            td = res["tarif_dynamique"]
+            td["mensuelle"]["table"].to_excel(w, sheet_name="Tarif_dynamique_mensuelle")
+            pd.DataFrame({"F_ANOVA": [td["mensuelle"]["anova_f"]], "p_value": [td["mensuelle"]["anova_p"]]}).to_excel(w, sheet_name="Tarif_dynamique_mensuelle_ANOVA", index=False)
+            td["saison"]["table"].to_excel(w, sheet_name="Tarif_dynamique_saison")
+            pd.DataFrame({"F_ANOVA": [td["saison"]["anova_f"]], "p_value": [td["saison"]["anova_p"]]}).to_excel(w, sheet_name="Tarif_dynamique_saison_ANOVA", index=False)
     return path
 
 

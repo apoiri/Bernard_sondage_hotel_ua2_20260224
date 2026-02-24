@@ -15,7 +15,9 @@ from pathlib import Path
 
 # --- Hôtel et volume ---
 NB_CHAMBRES = 100                    # Fixe (projet) – ne pas modifier
-TAUX_OCCUPATION = 0.72              # 72 % d'occupation moyen annuel
+# Taux industrie = moyenne des 12 taux mensuels (config_tarification_dynamique.json) ; si absent, défaut 0.73
+# Écart vs industrie : +0.01 = hôtel 1 % au-dessus, -0.01 = 1 % en dessous
+ECART_OCCUPATION_VS_INDUSTRIE = 0.01  # +1 % (performance plus élevée) ; mettre -0.01 pour plus bas
 DUREE_MOYENNE_SEJOUR = 2.5          # Nuits (aligné sur λ Poisson du Module 3)
 
 # --- Segments (personas) : noms et répartition en % ---
@@ -108,10 +110,33 @@ FICHIER_RAPPORT_EXCEL = "rapport_validation_sondage_hotel.xlsx"
 
 # ========== NE PAS MODIFIER CI-DESSOUS (logique du script) ==========
 
+FICHIER_CONFIG_ETENDUE = Path(__file__).resolve().parent / "config_tarification_dynamique.json"
+
+
+def _get_taux_industrie():
+    """Taux d'occupation moyen industrie = moyenne des 12 taux mensuels (config étendue)."""
+    if not FICHIER_CONFIG_ETENDUE.exists():
+        return 0.73
+    try:
+        with open(FICHIER_CONFIG_ETENDUE, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+        taux_mois = cfg.get("taux_occupation_mois")
+        if isinstance(taux_mois, list) and len(taux_mois) == 12:
+            return round(sum(taux_mois) / 12, 4)
+    except (json.JSONDecodeError, IOError, TypeError):
+        pass
+    return 0.73
+
+
+def _get_taux_occupation():
+    """Taux d'occupation cible de l'hôtel = industrie + ECART_OCCUPATION_VS_INDUSTRIE (± 1 %)."""
+    return round(_get_taux_industrie() + ECART_OCCUPATION_VS_INDUSTRIE, 4)
+
 
 def _calcul_n_reservations():
-    """Calcule le nombre de réservations pour une année à 72 % d'occupation."""
-    nuits_an = NB_CHAMBRES * 365 * TAUX_OCCUPATION
+    """Calcule le nombre de réservations pour une année (taux = industrie ± 1 %)."""
+    taux = _get_taux_occupation()
+    nuits_an = NB_CHAMBRES * 365 * taux
     return int(math.ceil(nuits_an / DUREE_MOYENNE_SEJOUR))
 
 
@@ -121,9 +146,14 @@ def get_config():
     Les autres modules peuvent faire : from m01_config import get_config; config = get_config()
     """
     n_reservations = _calcul_n_reservations()
+    taux_occ = _get_taux_occupation()
+    taux_ind = _get_taux_industrie()
     return {
         "NB_CHAMBRES": NB_CHAMBRES,
-        "TAUX_OCCUPATION": TAUX_OCCUPATION,
+        "TAUX_OCCUPATION": taux_occ,
+        "TAUX_OCCUPATION_POURCENT": round(taux_occ * 100, 1),
+        "TAUX_INDUSTRIE": taux_ind,
+        "TAUX_INDUSTRIE_POURCENT": round(taux_ind * 100, 1),
         "DUREE_MOYENNE_SEJOUR": DUREE_MOYENNE_SEJOUR,
         "N_RESERVATIONS": n_reservations,
         "SEGMENTS_NOMS": list(SEGMENTS_NOMS),
@@ -182,7 +212,7 @@ def print_hypotheses():
     print("HYPOTHÈSES DU MODULE 1 (config)")
     print("=" * 60)
     print(f"  NB_CHAMBRES           = {c['NB_CHAMBRES']}")
-    print(f"  TAUX_OCCUPATION       = {c['TAUX_OCCUPATION']} (72 %)")
+    print(f"  TAUX_OCCUPATION       = {c['TAUX_OCCUPATION']} ({c['TAUX_OCCUPATION_POURCENT']} %, industrie {c['TAUX_INDUSTRIE_POURCENT']} % ± 1 %)")
     print(f"  DUREE_MOYENNE_SEJOUR  = {c['DUREE_MOYENNE_SEJOUR']} nuits")
     print(f"  N_RESERVATIONS        = {c['N_RESERVATIONS']} (calculé)")
     print(f"  Segments              = {c['SEGMENTS_NOMS']}")

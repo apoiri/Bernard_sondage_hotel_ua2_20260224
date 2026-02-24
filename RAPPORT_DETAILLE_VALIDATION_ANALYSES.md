@@ -9,6 +9,7 @@
 ## 1. Contexte et validité des données
 
 - Le fichier **sondage_hotel_data.csv** contient environ **10 500 réservations** simulées sur une année (variables : segment, canal, annulation, nuits, revenus chambre/resto/spa, forfait, satisfaction NPS, etc.).
+- **Taux d'occupation cible :** le taux de génération est **industrie ± 1 %** (moyenne des 12 taux mensuels de la config étendue + écart). La valeur (ex. 72 %, 74 %) figure dans **config.json** (`TAUX_OCCUPATION_POURCENT`). C'est un **paramètre de la simulation** pour fixer le volume de réservations. Le taux **calculable à partir du CSV** (somme des Nuits vendues, ex. Interne + non annulée, divisée par la capacité 100×365) peut différer (effet des annulations, des Externes, du périmètre). Les étudiants ne sont pas censés « prouver » ce taux à partir du fichier ; c’est un élément de contexte pédagogique.
 - Les analyses ci‑dessous ont été réalisées avec les **mêmes données** que celles livrées aux étudiants. Les résultats constatés sont **reproductibles** à partir du CSV (script `verif_calculs_stats.py` et module m10).
 - **Validation des chiffres :** les valeurs de ce rapport (proportions, Khi², Pearson, ANOVA, régression, taux d'annulation, anomalies) ont été **recalculées sur le fichier sondage_hotel_data.csv** et correspondent aux sorties de `verif_calculs_stats.py` et du module m10. Chaque résultat est aligné sur l'analyse du fichier sondage livré (pas une simple reprise de modèle).
 - Ce rapport détaille, pour **chaque technique** : les **résultats constatés**, une **interprétation**, les **leçons à retenir** et l’**information à tenir pour la prise de décision**. Il permet aux professeurs et au client de **valider la qualité et l’usage pédagogique** des données.
@@ -109,16 +110,16 @@ Les **dépenses restaurant** diffèrent **très significativement** selon le seg
 
 ---
 
-## 6. Régression linéaire multiple (Total_Facture ~ Rev_Chambre + Rev_Resto + Rev_Spa)
+## 6. Régression linéaire multiple (Total_Facture ~ toutes sources de revenus)
 
 ### Ce que la technique permet de déceler
-Expliquer la **facture totale** à partir des revenus par poste (Chambre, Resto, Spa) et **vérifier la cohérence** du modèle de tarification (coefficients théoriques 1 ; 1,1 ; 1,3).
+Expliquer la **facture totale** à partir de **toutes les sources de revenus** (Chambre, Banquet si présent, Resto, Spa) et **vérifier la cohérence** du modèle (coefficients théoriques 1 pour Chambre/Banquet ; 1,1 Resto ; 1,3 Spa).
 
 ### Formule utilisée
-Modèle : Total_Facture = β₀ + β₁·Rev_Chambre + β₂·Rev_Resto + β₃·Rev_Spa + ε. MCO (moindres carrés ordinaires). R² = 1 − (SCR / SCT).
+Modèle : Total_Facture = β₀ + β₁·Rev_Chambre + β₂·Rev_Banquet + β₃·Rev_Resto + β₄·Rev_Spa + ε (Rev_Banquet inclus lorsque disponible). MCO. R² = 1 − (SCR / SCT).
 
 ### Résultats constatés
-- **Constante ≈ 2,35** — **Rev_Chambre ≈ 1,00** — **Rev_Resto ≈ 1,08** — **Rev_Spa ≈ 1,30** — **R² ≈ 0,9997** — n = 9 499
+- **Constante ≈ 2,59** — **Rev_Chambre ≈ 1,00** — **Rev_Banquet ≈ 1,00** — **Rev_Resto ≈ 1,08** — **Rev_Spa ≈ 1,29** — **R² ≈ 0,9998** — n ≈ 9 500 (pipeline évolution avec Rev_Banquet).
 
 ### Interprétation
 Les **coefficients** sont très proches du **modèle théorique** (1 ; 1,1 ; 1,3). La facture totale est **quasi parfaitement** expliquée par la somme pondérée des revenus, ce qui **valide la structure des données** pour l’exercice de régression et la cohérence du modèle économique simulé.
@@ -183,13 +184,24 @@ Les **anomalies sont présentes aux niveaux prévus** par la simulation. Le jeu 
 
 ---
 
-## 9. Tarification active (Saison_calendrier)
+## 9. Lien Spa × Sexe (situation accrue ou moindre des services spa)
 
-Pour les **exercices sur la tarification dynamique** (prix selon la période), utiliser la colonne **Saison_calendrier** (Basse / Épaule / Haute), dérivée du mois, et non la colonne **Saison** (Haute/Basse, liée au segment). Avec Saison_calendrier, la tarification active est nette : Haute ~412 $, Basse ~265 $ (+55 %), p ≈ 0. Voir **NOTE_SAISON_VS_TARIFICATION_DYNAMIQUE.md** et **Note_Saison_vs_Tarification_Dynamique.docx** pour le détail.
+Lorsque le fichier contient la colonne **Sexe** (pipeline évolution), le **rapport de validation (m10)** inclut une section **Lien Spa × Sexe** : tableau par sexe (effectif, moyenne Rev_Spa, part du total Rev_Spa, % avec Rev_Spa > 0) et ANOVA Rev_Spa par Sexe. Les revenus spa sont générés pour refléter environ **80 % depuis les femmes (F)** et **20 % depuis les hommes (M) et Autre** (m04). L’ANOVA est significative (p ≈ 0) : situation **accrue** pour F, **moindre** pour M/Autre. **Décision :** cibler l’offre spa selon le profil client et les dépenses par sexe.
 
 ---
 
-## 10. Synthèse pour les professeurs et le client
+## 10. Tarification dynamique (validation base mensuelle et base saison)
+
+Le **rapport de validation (m10)** valide que la **tarification dynamique est pratiquée** sur deux bases (lorsque Mois_sejour, Saison_calendrier, Tarif_applique sont présents) :
+
+- **Base mensuelle :** Tarif_applique moyen par Mois_sejour (1–12), ANOVA Tarif_applique par mois. Verdict : OK si p < 0,05 (écart significatif entre mois).
+- **Base saison :** Tarif_applique moyen par Saison_calendrier (Basse / Épaule / Haute), ANOVA. Verdict : OK si p < 0,05 et Haute > Basse.
+
+Utiliser **Saison_calendrier** (dérivée du mois), et non la colonne **Saison** (liée au segment). Voir **Note_Saison_vs_Tarification_Dynamique.docx** pour le détail.
+
+---
+
+## 11. Synthèse pour les professeurs et le client
 
 - **Validité des données :** Les résultats des analyses sont **cohérents** avec la structure et les hypothèses du jeu de données (simulation). Les formules utilisées sont **standards** et reproductibles (voir `VERIFICATION_CALCULS_STATISTIQUES.md` et `verif_calculs_stats.py`).
 - **Formation des étudiants :** Chaque technique est **exploitable** en cours (objectif, formule, interprétation, leçon, lien avec la décision). Le rapport Excel `rapport_validation_sondage_hotel.xlsx` et le tableau synthèse `tableau_synthese_techniques_statistiques.xlsx` complètent ce document pour la validation et la démonstration auprès des professeurs et du client.

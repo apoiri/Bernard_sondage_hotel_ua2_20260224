@@ -92,7 +92,15 @@ def run():
     # ---- 2. Présentation du jeu de données ----
     _add_heading(doc, "2. Présentation du jeu de données", level=1)
     _add_para(doc, f"Fichier de travail : {FICHIER_CSV_REFERENCE}")
-    _add_para(doc, "Contenu : Réservations simulées sur une année complète pour un hôtel de 100 chambres (taux d'occupation moyen 72 %, paramètre de la simulation). Le fichier contient environ 10 500 lignes (réservations) plus des lignes dupliquées volontaires pour l'exercice de nettoyage.")
+    try:
+        from m01_config import get_config
+        _c = get_config()
+        _taux_pct = _c.get("TAUX_OCCUPATION_POURCENT", 72)
+        _taux_industrie = _c.get("TAUX_INDUSTRIE_POURCENT", 73)
+    except Exception:
+        _taux_pct = 72
+        _taux_industrie = 73
+    _add_para(doc, f"Contenu : Réservations simulées sur une année complète pour un hôtel de 100 chambres. Le taux d'occupation cible est de {_taux_pct} % (hypothèse : performance de l'hôtel = industrie {_taux_industrie} % ± 1 %). Ce taux est le paramètre de la simulation pour fixer le volume de réservations ; le taux calculable à partir du CSV (nuits vendues / capacité 100×365) peut différer (annulations, Externes, périmètre). Le fichier contient environ 10 500 lignes (réservations) plus des lignes dupliquées volontaires pour l'exercice de nettoyage.")
     _add_para(doc, "Variables principales :")
     variables = [
         ("ID_Client", "Identifiant unique (ex. AB-00001)"),

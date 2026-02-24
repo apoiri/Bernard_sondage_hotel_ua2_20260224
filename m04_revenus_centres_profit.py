@@ -21,6 +21,9 @@ GAMMA_BANQUET_THETA = 200
 MOYENNES_REV_RESTO = [60, 45, 80, 150, 20]
 # Moyennes Rev_Spa par segment
 MOYENNES_REV_SPA = [0, 0, 180, 0, 120]
+# Répartition Rev_Spa par sexe : 80 % des revenus spa proviennent de Femmes, 20 % des Hommes et Autre
+PART_REV_SPA_FEMMES = 0.80   # 80 % des revenus spa depuis Sexe = F
+PART_REV_SPA_HOMMES_AUTRE = 0.20  # 20 % depuis M et Autre
 # Écart-type du bruit (autour des moyennes) pour garder ANOVA p < 0,05
 ECART_TYPE_BRUIT_RESTO = 18
 ECART_TYPE_BRUIT_SPA = 25
@@ -64,6 +67,14 @@ def run(df):
     rev_resto = np.zeros(n)
     rev_spa = np.zeros(n)
 
+    # Pour Rev_Spa : 80 % depuis Femmes (F), 20 % depuis Hommes (M) et Autre. Si pas de colonne Sexe, comportement par défaut.
+    has_sexe = "Sexe" in df.columns
+    if has_sexe:
+        sexe = df["Sexe"].values
+        # F utilise 100 % de la moyenne segment, M/Autre 25 % → ~80 % des revenus spa depuis F, ~20 % depuis M/Autre (si 50-50)
+        facteur_f = 1.0
+        facteur_m = 0.25
+
     mask_actif = ~annulee
     for i in range(n):
         if not mask_actif[i]:
@@ -80,9 +91,16 @@ def run(df):
         mu_r = MOYENNES_REV_RESTO[idx_seg]
         rev_resto[i] = max(0, mu_r + np.random.normal(0, ECART_TYPE_BRUIT_RESTO))
 
-        # Rev_Spa : moyenne segment + bruit normal, min 0
+        # Rev_Spa : moyenne segment + bruit ; 80 % des revenus spa depuis F, 20 % depuis M/Autre
         mu_s = MOYENNES_REV_SPA[idx_seg]
-        rev_spa[i] = max(0, mu_s + np.random.normal(0, ECART_TYPE_BRUIT_SPA))
+        if has_sexe and mu_s > 0:
+            if str(sexe[i]).strip().upper() == "F":
+                mu_s_eff = mu_s * facteur_f
+            else:
+                mu_s_eff = mu_s * facteur_m
+        else:
+            mu_s_eff = mu_s
+        rev_spa[i] = max(0, mu_s_eff + np.random.normal(0, ECART_TYPE_BRUIT_SPA))
 
     df = df.copy()
     df["Rev_Banquet"] = rev_banquet
