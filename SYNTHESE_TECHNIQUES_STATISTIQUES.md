@@ -1,0 +1,27 @@
+# Tableau synthèse – Techniques statistiques du rapport de validation
+
+Document à l’intention des professeurs et experts : pour chaque technique, objectif, formules, résultats observés et interprétation en une ou deux lignes.
+
+*Les résultats ci-dessous sont issus d’un tirage type (environ 10 500 réservations). Les valeurs peuvent varier légèrement d’un tirage à l’autre.*
+
+---
+
+## Tableau synthèse
+
+| **Technique** | **Ce que la technique permet de déceler** | **Formule(s) utilisée(s)** | **Résultats obtenus** | **Explication sommaire** |
+|---------------|------------------------------------------|----------------------------|------------------------|---------------------------|
+| **Proportions et intervalle de confiance 95 %** | Estimer la part d’une catégorie dans la population (ex. % d’annulations) et la précision de cette estimation (IC 95 %). | \( p \pm 1{,}96 \sqrt{\dfrac{p(1-p)}{n}} \) (approximation normale pour une proportion). | % Annulées : 18,7 % [18,0 % ; 19,5 %]. % Rev_Spa > 0 : 52,3 % [51,4 % ; 53,3 %]. % Forfait Gastronomique : 42,1 % [41,1 % ; 43,0 %]. | Les proportions observées sont cohérentes avec les hypothèses de la simulation (ex. ~18 % d’annulations). Les IC confirment une estimation stable grâce à un grand échantillon. |
+| **Test du Khi-deux (indépendance)** | Déceler une **liaison** entre deux variables catégorielles (ici Segment et Type de forfait) : les segments ont-ils des comportements différents selon le forfait ? | \( \chi^2 = \sum \dfrac{(O - E)^2}{E} \), avec O = effectifs observés, E = effectifs attendus sous l’hypothèse d’indépendance. ddl = (lignes − 1)(colonnes − 1). | Khi² = 2841,56 ; ddl = 4 ; p-value ≈ 0,000. | Liaison très significative : le type de forfait (Gastronomique vs Chambre seule) est fortement associé au segment client (ex. Loisirs → plus de Forfait Gastronomique, Congressiste → plus Chambre seule). |
+| **Corrélation de Pearson** | Mesurer la **relation linéaire** entre deux variables numériques (ici revenus Spa et satisfaction NPS). | \( r = \dfrac{\text{Cov}(X,Y)}{s_X \cdot s_Y} \). Calcul avec `scipy.stats.pearsonr` sur les réservations non annulées (sans NaN). | r = 0,45 ; p-value ≈ 0,000 ; n = 8 121. | Corrélation positive significative : plus les revenus Spa sont élevés, plus la satisfaction NPS tend à être élevée. La valeur r < 0,75 reflète la part de bruit volontairement introduite dans la simulation. |
+| **ANOVA à un facteur** | Déceler des **différences de moyennes** d’une variable quantitative (Rev_Resto) entre plusieurs groupes (segments). | F = (variance inter-groupes / ddl₁) / (variance intra-groupes / ddl₂). Test F de Fisher ; `scipy.stats.f_oneway`. | F = 10 362,84 ; p-value ≈ 0,000. | Les dépenses restaurant (Rev_Resto) diffèrent significativement selon le segment. Les étudiants peuvent interpréter quels segments dépensent le plus au restaurant. |
+| **Régression linéaire multiple** | Expliquer la **facture totale** à partir des revenus par poste (Chambre, Resto, Spa) et vérifier la cohérence du modèle de tarification. | Modèle : Total_Facture = β₀ + β₁·Rev_Chambre + β₂·Rev_Resto + β₃·Rev_Spa + ε. MCO (moindres carrés ordinaires). R² = 1 − (SCR / SCT). | Constante ≈ 2,35 ; Rev_Chambre ≈ 1,00 ; Rev_Resto ≈ 1,08 ; Rev_Spa ≈ 1,30 ; R² ≈ 0,9997 ; n = 9 499. | Les coefficients sont proches du modèle théorique (1 ; 1,1 ; 1,3). La facture totale est quasi parfaitement expliquée par la somme pondérée des revenus, ce qui valide la structure des données pour l’exercice de régression. |
+| **Taux d’annulation par canal** | Comparer le **risque d’annulation** entre réservations directes et intermédiaires (OTA). | Taux = (nombre d’annulées dans le groupe) / (nombre total dans le groupe). | Taux Direct : 6,8 % ; Taux Intermédiaire : 30,5 %. (Attendus simulation : ~7 % et ~29 %.) | Les taux observés sont proches des paramètres de la simulation. Les intermédiaires affichent un taux d’annulation nettement plus élevé que le direct, support pour un débat décisionnel (canal, politique tarifaire). |
+| **Contrôle qualité (anomalies pédagogiques)** | Vérifier la **présence des anomalies** volontairement injectées pour les exercices de nettoyage (incohérences, outliers, manquants, doublons). | Comptages : Externes avec Nuits > 0 ; lignes avec NPS = 99 ; valeurs manquantes Rev_Spa / Rev_Resto ; nombre de doublons (total − lignes uniques). | Externes Nuits>0 : 15 ; NPS = 99 : 3 ; Manquants Rev_Spa : 526 (5,0 %) ; Rev_Resto : 526 (5,0 %) ; Doublons : 10. | Les anomalies sont présentes aux niveaux prévus. Le jeu de données est adapté pour faire travailler les étudiants sur la détection et le traitement des incohérences, valeurs extrêmes, manquants et doublons. |
+
+---
+
+## Remarques pour les experts
+
+- **Sources des calculs** : NumPy, Pandas et SciPy (référence en statistique avec Python). Les formules sont standards et reproductibles (voir `VERIFICATION_CALCULS_STATISTIQUES.md` et le script `verif_calculs_stats.py`).
+- **Résultats** : Les valeurs du tableau correspondent au rapport Excel `rapport_validation_sondage_hotel.xlsx` et à la sortie du module 10 pour un même fichier CSV. Un nouveau tirage (regénération des données) produira des résultats légèrement différents mais structurellement similaires.
+- **Usage pédagogique** : Chaque ligne du tableau peut servir de fiche récap pour les étudiants (objectif du test, formule, interprétation) ou de base pour une présentation aux professeurs et experts.

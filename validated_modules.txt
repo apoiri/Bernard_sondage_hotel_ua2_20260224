@@ -1,0 +1,14 @@
+# Modules validés — NE PAS MODIFIER
+# Un chemin par ligne (fichier ou dossier)
+
+m01_config.py
+m02_segments.py
+m03_nuits_chambre.py
+m04_revenus_centres_profit.py
+m05_type_forfait.py
+m06_satisfaction_nps.py
+m07_total_facture.py
+m08_anomalies_pedagogiques.py
+m09_export_csv.py
+m10_rapport_validation.py
+m11_synthese_word_prof.py

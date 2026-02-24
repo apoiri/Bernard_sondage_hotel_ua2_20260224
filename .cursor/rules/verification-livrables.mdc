@@ -1,0 +1,17 @@
+---
+description: Exiger une preuve après chaque livrable demandé par l'utilisateur
+alwaysApply: true
+---
+
+# Vérification des livrables
+
+Quand l'utilisateur demande une modification ou un livrable concret (ex. « ajoute X à la fin de chaque module », « crée un fichier Y ») :
+
+1. **Réaliser le travail** dans les fichiers concernés.
+2. **Fournir une preuve dans la même réponse** que le travail a été fait :
+   - Soit exécuter une commande de vérification (grep, lecture de fichier) et **afficher le résultat** dans la réponse.
+   - Soit citer un extrait court du fichier modifié (avec les numéros de lignes) pour montrer que le contenu attendu est présent.
+
+Ne pas se contenter de dire « c’est fait » sans preuve. Si la vérification échoue (fichier absent, chaîne introuvable), corriger et revérifier.
+
+Pour les vérifications récurrentes (ex. « règle de blocage en fin de chaque module »), s’inspirer du fichier **VERIFICATION_LIVRABLES.md** à la racine du projet.

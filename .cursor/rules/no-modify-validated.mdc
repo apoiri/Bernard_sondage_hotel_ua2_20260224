@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+description: "Protège les modules validés contre toute modification"
+---
+
+# RÈGLE ABSOLUE : PROTECTION MODULES VALIDÉS
+
+1. Les fichiers/dossiers listés dans **validated_modules.txt** sont **IMMUTABLES**.
+2. **AVANT toute édition** : confirmer que le fichier cible n'est PAS dans validated_modules.txt.
+3. **Si le fichier est dans la liste** : REFUSER la modification et expliquer pourquoi.
+4. Référence : [validated_modules.txt](validated_modules.txt)
+
+**NE MODIFIE JAMAIS les modules validés. Vérifier toujours cette règle en premier.**

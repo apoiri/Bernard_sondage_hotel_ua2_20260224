@@ -5,7 +5,58 @@
 
 ---
 
-## 1. Contexte et objectifs du projet
+## 1. Contexte, reprise et checklist (ne jamais repartir à zéro)
+
+### Pourquoi cette section
+
+Cursor ne retient pas les discussions entre les sessions. Si tu changes de répertoire, d’ordinateur ou que tu réactives une station de travail, **tout le contexte semble perdu**. Ce document et Git/GitHub sont ta mémoire de projet : en suivant la checklist ci-dessous, tu ne repartiras plus à zéro.
+
+### Quand tu réactives une station de travail (Cursor)
+
+1. **Ouvre le bon dossier dans Cursor**  
+   Fichier → Ouvrir le dossier → `Bernard_sondage_hotel_ua2_20260224`  
+   (ou le chemin actuel du projet sur cette machine).
+
+2. **Récupère la dernière version depuis GitHub** (si le projet est déjà cloné ou déplacé) :
+   ```bash
+   cd "/Users/alainpoirier/Desktop/Bernard_sondage_hotel_ua2_20260224"
+   git pull origin main
+   ```
+
+3. **Donne le contexte à Cursor en ouvrant ce fichier**  
+   Ouvre **ARCHIVE_PROJET_SONDAGE_HOTEL.md** (ce fichier) et, si besoin, **PLAN_DEVELOPPEMENT_SONDAGE_HOTEL_MODULES.md**. Tu peux dire à l’assistant : *« J’ai rouvert le projet sondage hôtel. Voici l’archive du projet [coller ou @ARCHIVE_PROJET_SONDAGE_HOTEL.md]. Je veux reprendre à [X]. »*
+
+4. **Vérifie où tu en es**  
+   Regarde la section **3. Fichiers du développement** pour le statut des modules (bloqué / en cours). Les livrables (CSV, Excel, Word) sont listés à la fin du tableau.
+
+### Où trouver quoi (référence rapide)
+
+| Besoin | Fichier ou ressource |
+|--------|----------------------|
+| Contexte global, décisions, reprise | **ARCHIVE_PROJET_SONDAGE_HOTEL.md** (ce fichier) |
+| Dernière session (24 fév. 2026) – discussion, pipeline, livrables | **HISTORIQUE_SESSION_2026-02-24.md** |
+| Histoire de ce qui a été développé (modules 1–11) | **HISTOIRE_DEVELOPPEMENT_SONDAGE_HOTEL.md** |
+| Chaînage m01→m09, qui génère le CSV | **CHAINAGE_MODULES_m01_a_m09.md** |
+| Modifier des valeurs (un seul fichier : m01) | **MODE_FONCTIONNEMENT_MODIFICATIONS.md** |
+| Livrables à remettre au client | **SYNTHESE_LIVRABLES_CLIENT.md** |
+| Spec détaillée, modules, verrouillage | **PLAN_DEVELOPPEMENT_SONDAGE_HOTEL_MODULES.md** |
+| Commandes Git et push (sauvegarde) | **COMMENT_UTILISER_GIT.txt** |
+| Vérifier qu’un livrable a bien été fait (preuve) | **VERIFICATION_LIVRABLES.md** |
+| Code et historique complet | Dépôt GitHub (lien en bas de COMMENT_UTILISER_GIT.txt) |
+| Objectifs initiaux, structure des données | **PROJET_DONNEES_HOTEL_MARKETING_SONDAGE.md** |
+
+### Checklist « Je reprends le projet » (à cocher mentalement)
+
+- [ ] Cursor ouvert sur le dossier **Bernard_sondage_hotel_ua2_20260224**
+- [ ] `git pull origin main` fait (pour avoir la dernière version)
+- [ ] **ARCHIVE_PROJET_SONDAGE_HOTEL.md** lu ou ouvert pour l’assistant
+- [ ] Objectif de la session clair (ex. : finir m11, corriger le rapport, etc.)
+
+Après une session de travail : **add → commit → push** (voir COMMENT_UTILISER_GIT.txt).
+
+---
+
+## 2. Contexte et objectifs du projet
 
 - **Commande** : Préparer un jeu de données de réservations hôtelières (simulation) pour des **étudiants en marketing-sondage**, afin qu’ils pratiquent les **techniques statistiques d’analyse de sondage** et produisent des **informations pour la prise de décision**.
 - **Public** : Professeur et étudiants ; le professeur doit pouvoir s’assurer que **tous les éléments d’apprentissage** prévus sont réalisables avec le fichier.
@@ -17,7 +68,7 @@
 
 ---
 
-## 2. Décisions prises pendant la discussion
+## 3. Décisions prises pendant la discussion
 
 | Décision | Détail |
 |----------|--------|
@@ -34,7 +85,7 @@
 
 ---
 
-## 3. Fichiers du développement (emplacement et rôle)
+## 4. Fichiers du développement (emplacement et rôle)
 
 **Répertoire principal** : `Bernard_sondage_hotel_ua2_20260224/` (ou chemin indiqué dans le plan).
 
@@ -63,15 +114,15 @@
 
 ---
 
-## 4. Enchaînement des modules et exécution
+## 5. Enchaînement des modules et exécution
 
 - **Ordre logique** : 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11.  
 - **Exécution manuelle** : lancer chaque script depuis le répertoire du projet (ex. `python3 m01_config.py`, puis `m02_segments.py`, etc.) ; les modules 2–11 lisent la config (m01) ou la sortie du module précédent.  
-- **Orchestrateur** : prévu **run_pipeline.py** (Module 0) pour enchaîner 1 à 11 en une seule commande ; non implémenté dans cette version — à ajouter si besoin.
+- **Orchestrateur** : **run_pipeline.py** enchaîne m01 → m09 → m10 → m11 en une seule commande et vérifie la règle de blocage + présence des 4 fichiers de sortie. Commande : `python3 run_pipeline.py`. Détail : **HISTORIQUE_SESSION_2026-02-24.md** et **VERIFICATION_LIVRABLES.md** (section Pipeline).
 
 ---
 
-## 5. Règles de blocage et évolution
+## 6. Règles de blocage et évolution
 
 - Un module **bloqué** ne doit **pas être modifié** sans demande explicite de déblocage.  
 - Toute évolution qui toucherait à un module bloqué se fait soit par **déblocage**, soit dans un **nouveau fichier** (ex. m04b_ajustement.py) qui s’enchaîne après le module concerné.  
@@ -79,7 +130,7 @@
 
 ---
 
-## 6. Pistes d’amélioration ou de modification
+## 7. Pistes d’amélioration ou de modification
 
 - **Orchestrateur** : créer `run_pipeline.py` pour exécuter d’un coup m01 → m11 et produire CSV + Excel + Word.  
 - **Détail « information fine »** : si besoin, ajouter des modules ou scripts qui génèrent des tables **détail_nourriture** et **détail_spa** (lignes de facture) à partir des montants Rev_Resto et Rev_Spa, avec sortie Excel multi-onglets ou CSV séparés.  
@@ -88,7 +139,7 @@
 
 ---
 
-## 7. Dépendances techniques
+## 8. Dépendances techniques
 
 - **Python 3** avec **pandas**, **numpy**, **scipy** (pour ANOVA, Khi-deux, Pearson, régression).  
 - **openpyxl** pour l’export Excel (m10).  
@@ -96,4 +147,14 @@
 
 ---
 
-*Archive créée le 2025-02-17. Pour toute modification ou amélioration, s’appuyer sur ce document et sur **PLAN_DEVELOPPEMENT_SONDAGE_HOTEL_MODULES.md**.*
+## 9. Garanties pour ne jamais repartir à zéro
+
+- **En début de session** : ouvrir ce dossier dans Cursor → `git pull` → lire la section 1 (Contexte, reprise et checklist) et ouvrir ce fichier pour l'assistant.
+- **En fin de session** : `git add .` → `git commit -m "…"` → `git push origin main` (voir COMMENT_UTILISER_GIT.txt).
+- **Si tu changes de machine ou de répertoire** : cloner le dépôt GitHub (ou copier le dossier), ouvrir le projet dans Cursor, puis suivre la checklist reprise (section 1).
+- **L'assistant Cursor n'a pas la mémoire** : lui donner **ARCHIVE_PROJET_SONDAGE_HOTEL.md** (et éventuellement PLAN_DEVELOPPEMENT_SONDAGE_HOTEL_MODULES.md) pour qu'il retrouve le contexte. Tu n'as pas à tout réexpliquer.
+
+---
+
+*Archive créée le 2025-02-17. Pour toute modification ou amélioration, s'appuyer sur ce document et sur **PLAN_DEVELOPPEMENT_SONDAGE_HOTEL_MODULES.md**.*
+
