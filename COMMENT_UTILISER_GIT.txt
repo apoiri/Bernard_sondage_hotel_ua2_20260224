@@ -1,5 +1,5 @@
 ================================================================================
-COMMENT NE PLUS JAMAIS PERDRE TON TRAVAIL – GIT EN 3 ÉTAPES
+COMMENT NE PLUS JAMAIS PERDRE TON TRAVAIL – GIT EN 4 ÉTAPES
 ================================================================================
 
 À CHAQUE FOIS que tu as fini du travail sur ce projet :
@@ -9,16 +9,24 @@ COMMENT NE PLUS JAMAIS PERDRE TON TRAVAIL – GIT EN 3 ÉTAPES
   2. Va dans le dossier du projet :
      cd "/Users/alainpoirier/Desktop/Bernard_sondage_hotel_ua2_20260224"
 
-  3. Dis à Git d’enregistrer les changements :
+  3. Enregistre les changements et fais une "photo" (commit) :
      git add .
-
-  4. Fais une "photo" (sauvegarde) avec une courte description :
      git commit -m "Description de ce que tu viens de faire"
 
-Exemple : git commit -m "Module 11 Word terminé et testé"
+     Exemple : git commit -m "Module 11 Word terminé et testé"
 
-Comme ça, tu as toujours une sauvegarde datée. Si quelque chose casse ou si tu
-dois reprendre plus tard, ton travail est là. Tu ne refais pas 23 fois la même
-chose.
+  4. ENVOIE vers GitHub (sinon tout reste seulement sur ton Mac) :
+     git push origin main
 
+     → C’est cette étape qui garantit que ton contexte et ton code sont
+       sauvegardés en ligne. Si tu changes de dossier, d’ordinateur ou que
+       Cursor oublie la discussion, tu retrouves tout sur GitHub.
+
+Résumé : add → commit → push. Sans "push", tu ne perds pas ton travail en local,
+mais tu n’as pas de sauvegarde en ligne = risque de tout recommencer à zéro
+si tu ouvres un autre projet ou un nouveau répertoire.
+
+================================================================================
+Dépôt GitHub de ce projet :
+  https://github.com/apoiri/Bernard_sondage_hotel_ua2_20260224
 ================================================================================
