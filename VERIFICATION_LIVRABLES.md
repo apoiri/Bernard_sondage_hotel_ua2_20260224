@@ -54,6 +54,19 @@ Si une étape échoue (module en erreur ou vérification non passée), le script
 
 ---
 
+### 2b. Pipeline évolution (run_pipeline_evolution.py)
+
+**Même principe** : lancer depuis le **Terminal macOS** (Application **Terminal.app**), après être allé dans le dossier du projet avec `cd "chemin_du_projet"`. Si vous lancez depuis le terminal intégré de Cursor, les 4 fichiers peuvent être mis à jour dans un autre répertoire (sandbox) et vous ne les verrez pas à jour dans le Finder.
+
+**Commande :**
+```bash
+cd "/Users/alainpoirier/Desktop/Bernard_sondage_hotel_ua2_20260224"
+python3 run_pipeline_evolution.py
+```
+Le script affiche au démarrage le **répertoire d’écriture** et en fin d’exécution le **chemin complet** de chaque fichier. Si les dates des fichiers dans votre dossier ne correspondent pas à l’heure d’exécution, ouvrez le Finder → **Aller → Aller au dossier** (Cmd+Shift+G) → collez le chemin indiqué par le script.
+
+---
+
 ### 3. Autres livrables
 
 Pour toute autre demande (ex. « le rapport Excel doit contenir un onglet X »), ajoute dans ce fichier une section du type :

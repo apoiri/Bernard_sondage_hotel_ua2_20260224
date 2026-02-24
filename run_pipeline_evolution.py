@@ -11,6 +11,7 @@ Type_chambre, Numero_chambre, Mois_sejour, Sexe, Niveau_revenus, Pays, Province,
 Usage : python3 run_pipeline_evolution.py
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -29,9 +30,12 @@ def run_script(script: str) -> int:
 
 
 def main() -> int:
+    os.chdir(REP_PROJET)
     print("=" * 60)
     print("PIPELINE ÉVOLUTION – Tarification dynamique")
     print("=" * 60)
+    print(f"Répertoire d'écriture : {REP_PROJET.resolve()}")
+    print("(Les 4 fichiers seront créés dans ce dossier.)\n")
 
     # 1. Config de base (m01 → config.json)
     print("\n>>> m01_config.py")
@@ -41,11 +45,12 @@ def main() -> int:
         return code
 
     # 2. Chaîne m02c → m02d → m03b → m04 → m05 → m06 → m07 → m08 → m09 (en processus)
-    print("\n>>> Chaîne m02c → m02d → m03b → m04 … m09")
+    print("\n>>> Chaîne m02c → m02e → m02d → m03b → m04 … m09")
     sys.path.insert(0, str(REP_PROJET))
     from m00_config_etendue import get_config_etendue
     from m02b_types_chambre_calendrier import get_types_chambre, get_coefficient_mois
     import m02c_reservations_avec_dates
+    import m02e_saison_calendrier
     import m02d_allocation_chambres
     import m03b_revenus_chambre_dynamique
     import m04_revenus_centres_profit
@@ -60,6 +65,7 @@ def main() -> int:
     get_coefficient_mois(1)
 
     df = m02c_reservations_avec_dates.run()
+    df = m02e_saison_calendrier.run(df)
     df = m02d_allocation_chambres.run(df)
     df = m03b_revenus_chambre_dynamique.run(df)
     df = m04_revenus_centres_profit.run(df)
@@ -70,7 +76,7 @@ def main() -> int:
     df, chemin_csv = m09_export_csv.run(df)
     print(f"  CSV exporté : {chemin_csv} ({len(df)} lignes)")
 
-    colonnes_attendues = ["Type_chambre", "Numero_chambre", "Sexe", "Niveau_revenus", "Pays", "Province", "Ville", "Rev_Chambre"]
+    colonnes_attendues = ["Type_chambre", "Numero_chambre", "Sexe", "Niveau_revenus", "Pays", "Province", "Ville", "Rev_Chambre", "Saison_calendrier"]
     manquantes = [c for c in colonnes_attendues if c not in df.columns]
     if manquantes:
         print(f"  [ATTENTION] Colonnes absentes du CSV : {manquantes}")
@@ -93,11 +99,14 @@ def main() -> int:
 
     print("\n" + "=" * 60)
     print("Pipeline évolution terminé avec succès.")
-    print("  - config.json")
-    print("  - sondage_hotel_data.csv (avec Type_chambre, Sexe, Pays, etc.)")
-    print("  - rapport_validation_sondage_hotel.xlsx")
-    print("  - synthese_elements_apprentissage_prof.docx")
     print("=" * 60)
+    rep = REP_PROJET.resolve()
+    for nom in ["config.json", "sondage_hotel_data.csv", "rapport_validation_sondage_hotel.xlsx", "synthese_elements_apprentissage_prof.docx"]:
+        chemin = rep / nom
+        existe = " (créé)" if chemin.exists() else " [ABSENT]"
+        print(f"  {nom}  →  {chemin}{existe}")
+    print("=" * 60)
+    print("Pour les ouvrir dans le Finder : ouvrir → Aller au dossier → coller le chemin ci‑dessus.")
     return 0
 
 

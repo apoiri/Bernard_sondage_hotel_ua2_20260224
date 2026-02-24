@@ -6,6 +6,7 @@ m01_config.py
 m02_segments.py
 m02b_types_chambre_calendrier.py
 m02c_reservations_avec_dates.py
+m02e_saison_calendrier.py
 m02d_allocation_chambres.py
 m03_nuits_chambre.py
 m03b_revenus_chambre_dynamique.py

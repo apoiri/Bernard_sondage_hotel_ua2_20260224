@@ -34,7 +34,7 @@ FICHIERS_SORTIE_ATTENDUS = [
     "synthese_elements_apprentissage_prof.docx",
 ]
 
-NOMBRE_MODULES_AVEC_REGLE_BLOCAGE = 14  # m01..m11 + m02b, m02c, m02d, m03b
+NOMBRE_MODULES_AVEC_REGLE_BLOCAGE = 15  # m01..m11 + m02c, m02d, m02e, m03b (m02b sans blocage)
 
 
 def run_module(script: str) -> int:
