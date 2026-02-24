@@ -7,7 +7,7 @@ COMMENT NE PLUS JAMAIS PERDRE TON TRAVAIL – GIT EN 3 ÉTAPES
   1. Ouvre le Terminal (Cursor ou Mac).
 
   2. Va dans le dossier du projet :
-     cd "/Users/alainpoirier/Desktop/Bern Ch fichier UA2"
+     cd "/Users/alainpoirier/Desktop/Bernard_sondage_hotel_ua2_20260224"
 
   3. Dis à Git d’enregistrer les changements :
      git add .

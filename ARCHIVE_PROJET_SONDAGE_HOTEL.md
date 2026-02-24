@@ -36,7 +36,7 @@
 
 ## 3. Fichiers du développement (emplacement et rôle)
 
-**Répertoire principal** : `Bern Ch fichier UA2/` (ou chemin indiqué dans le plan).
+**Répertoire principal** : `Bernard_sondage_hotel_ua2_20260224/` (ou chemin indiqué dans le plan).
 
 | Fichier | Rôle | Statut |
 |---------|------|--------|

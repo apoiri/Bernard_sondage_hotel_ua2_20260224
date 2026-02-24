@@ -1,0 +1,30 @@
+================================================================================
+PREMIÈRE EXPORTATION VERS GITHUB – À FAIRE DANS LE TERMINAL
+================================================================================
+
+1. Ouvre le Terminal (Cursor ou Mac).
+
+2. Va dans le projet :
+   cd "/Users/alainpoirier/Desktop/Bernard_sondage_hotel_ua2_20260224"
+
+3. Enregistre les derniers changements (nom du dossier, doc) :
+   git add .
+   git commit -m "Mise à jour nom répertoire Bernard_sondage_hotel_ua2_20260224"
+
+4. Connecte ce projet à ton dépôt GitHub (UNE SEULE FOIS).
+   Remplace TON-PSEUDO-GITHUB par ton vrai pseudo GitHub.
+   Remplace NOM-DU-REPO par le nom exact du dépôt sur GitHub
+   (ex. Bernard_sondage_hotel_ua2_20260224) :
+
+   git remote add origin https://github.com/TON-PSEUDO-GITHUB/NOM-DU-REPO.git
+
+   Exemple si ton pseudo est "alainpoirier" et le dépôt "Bernard_sondage_hotel_ua2_20260224" :
+   git remote add origin https://github.com/alainpoirier/Bernard_sondage_hotel_ua2_20260224.git
+
+5. Envoie tout vers GitHub (première exportation) :
+   git push -u origin main
+
+6. GitHub peut demander de te connecter (navigateur ou token). Après ça,
+   ton projet sera visible sur ton compte GitHub = démo que ça fonctionne.
+
+================================================================================
