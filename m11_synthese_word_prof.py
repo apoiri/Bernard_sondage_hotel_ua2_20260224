@@ -60,13 +60,14 @@ def run():
     # ---- 1. Présentation du jeu de données ----
     _add_heading(doc, "1. Présentation du jeu de données", level=1)
     _add_para(doc, f"Fichier de travail : {FICHIER_CSV_REFERENCE}")
-    _add_para(doc, "Contenu : Réservations simulées sur une année complète pour un hôtel de 100 chambres (taux d'occupation moyen 72 %). Le fichier contient environ 10 500 lignes (réservations) plus des lignes dupliquées volontaires pour l'exercice de nettoyage.")
+    _add_para(doc, "Contenu : Réservations simulées sur une année complète pour un hôtel de 100 chambres (taux d'occupation moyen 72 %, paramètre de la simulation). Le fichier contient environ 10 500 lignes (réservations) plus des lignes dupliquées volontaires pour l'exercice de nettoyage.")
     _add_para(doc, "Variables principales :")
     variables = [
         ("ID_Client", "Identifiant unique (ex. AB-00001)"),
         ("Segment", "Persona : Affaires_Solo, Congressiste, Loisirs_Couple, Local_Gourmet, Local_Spa"),
         ("Type_Client", "Interne (séjourne) / Externe (ne séjourne pas)"),
-        ("Saison", "Haute / Basse"),
+        ("Saison", "Haute / Basse (selon segment ; ne pas utiliser pour les analyses de tarification dynamique)."),
+        ("Saison_calendrier", "Basse / Épaule / Haute (dérivée du mois ; à utiliser pour les exercices sur la tarification active et les prix)."),
         ("Canal_reservation", "Source : Site Web, Courriel, Téléphone, Booking.com, Expedia, etc."),
         ("Type_canal", "Direct / Intermediaire"),
         ("Annulee", "Oui / Non (taux annulation ~18 %, plus élevé via intermédiaires)"),
@@ -99,14 +100,15 @@ def run():
         cell.paragraphs[0].runs[0].bold = True
 
     lignes = [
-        ("Statistiques descriptives", "Toutes (effectifs, moyennes, écarts-types, min/max)", "Tableaux de synthèse par segment, Type_Client, Saison, Annulee ; description des variables numériques (Nuits, Rev_*, Total_Facture, Satisfaction_NPS).", "☐"),
+        ("Statistiques descriptives", "Toutes (effectifs, moyennes, écarts-types, min/max)", "Tableaux de synthèse par segment, Type_Client, Saison, Saison_calendrier, Annulee ; description des variables numériques (Nuits, Rev_*, Total_Facture, Satisfaction_NPS).", "☐"),
         ("Proportions et intervalles de confiance", "Annulee ; Rev_Spa ; Type_Forfait", "Estimer une proportion en population (ex. % annulées, % utilisant le spa, % Forfait Gastronomique) et calculer l'IC 95 %.", "☐"),
         ("Test du Khi-deux (indépendance)", "Segment × Type_Forfait", "Vérifier la liaison entre segment et type de forfait (Loisirs → Forfait Gastronomique, Congressiste → Chambre Seule) ; khi², ddl, p-value.", "☐"),
-        ("Corrélation de Pearson", "Rev_Spa, Satisfaction_NPS (lignes non annulées)", "Mesurer la liaison linéaire entre dépense spa et satisfaction ; r, p-value. Attendu : corrélation positive (données conçues pour r ≈ 0,75 avant anomalies).", "☐"),
+        ("Corrélation de Pearson", "Rev_Spa, Satisfaction_NPS (lignes non annulées)", "Mesurer la liaison linéaire entre dépense spa et satisfaction ; r, p-value. Attendu : corrélation positive (données conçues pour r ≈ 0,75 après nettoyage ; en brut r ≈ 0,45).", "☐"),
+        ("Tarification active (prix selon la période)", "Saison_calendrier, Tarif_applique ou Rev_Chambre (Interne, Non annulée, Nuits > 0)", "Comparer les tarifs ou revenus chambre selon Saison_calendrier (Basse / Épaule / Haute). Attendu : Haute > Épaule > Basse (~+55 % Haute vs Basse). Ne pas utiliser la colonne Saison pour cet exercice.", "☐"),
         ("Comparaison de moyennes (ANOVA)", "Rev_Resto par Segment", "Comparer les dépenses restaurant entre segments ; F, p-value. Attendu : différences significatives entre segments (p < 0,05).", "☐"),
         ("Régression linéaire multiple", "Total_Facture ~ Rev_Chambre + Rev_Resto + Rev_Spa", "Prédire la facture totale à partir des revenus par poste ; coefficients, R², interprétation. Attendu : coefficients proches de 1 ; 1,1 ; 1,3.", "☐"),
         ("Annulations par canal", "Type_canal, Annulee ; Canal_reservation", "Comparer les taux d'annulation Direct vs Intermédiaire ; tableaux et graphiques. Attendu : ~7 % direct, ~29 % intermédiaire.", "☐"),
-        ("Nettoyage des données (data cleaning)", "Type_Client & Nuits ; Satisfaction_NPS ; Rev_Spa, Rev_Resto ; doublons", "Détecter et traiter : Externes avec Nuits > 0 (incohérence) ; valeurs aberrantes (ex. NPS = 99) ; valeurs manquantes (Rev_Spa, Rev_Resto) ; lignes dupliquées.", "☐"),
+        ("Nettoyage des données (data cleaning)", "Type_Client & Nuits ; Annulee & Nuits ; Satisfaction_NPS ; Rev_Spa, Rev_Resto ; doublons", "Détecter et traiter : Externes avec Nuits > 0 (incohérence) ; Annulee = Oui avec Nuits > 0 (4 lignes) ; valeurs aberrantes (ex. NPS = 99) ; valeurs manquantes (Rev_Spa, Rev_Resto) ; lignes dupliquées.", "☐"),
         ("Prise de décision / recommandations", "Segments, revenus, satisfaction, canal", "Synthétiser les résultats pour formuler des recommandations (ex. cibler les canaux à faible annulation, segments à forte dépense spa, etc.).", "☐"),
     ]
     for elem, vars_, objectif, coche in lignes:
@@ -122,6 +124,7 @@ def run():
     _add_para(doc, "Le fichier contient volontairement les anomalies suivantes, à faire détecter et corriger par les étudiants :")
     anomalies = [
         "Incohérence logique : des clients « Externes » ont Nuits > 0 (une quinzaine de lignes).",
+        "Incohérence logique : Annulee = Oui avec Nuits > 0 (4 lignes).",
         "Outliers : quelques lignes avec Satisfaction_NPS = 99 (erreur de saisie simulée).",
         "Valeurs manquantes : environ 5 % de cellules vides dans Rev_Spa et Rev_Resto.",
         "Doublons : une dizaine de lignes sont dupliquées (à identifier et supprimer ou fusionner).",
@@ -131,8 +134,27 @@ def run():
     _add_para(doc, "Après nettoyage, les analyses (proportions, régression, Pearson, etc.) peuvent être refaites pour comparer les résultats avec/sans anomalies.")
     doc.add_paragraph()
 
-    # ---- 4. Checklist professeur ----
-    _add_heading(doc, "4. Checklist – Éléments traités en cours / TD", level=1)
+    # ---- 4. Synthèse du rapport de validation des analyses ----
+    _add_heading(doc, "4. Synthèse du rapport de validation des analyses", level=1)
+    _add_para(doc, "Le document complet RAPPORT_DETAILLE_VALIDATION_ANALYSES.md est fourni avec ce livrable. Il détaille pour chaque technique : résultats, interprétation, leçons et lien avec la prise de décision. Ci-dessous, l'essentiel pour le professeur.", bold=False)
+    doc.add_paragraph()
+    _add_para(doc, "Résultats attendus (à utiliser pour cadrer les corrigés et les attentes) :", bold=True)
+    synthèse_validation = [
+        "Proportions & IC 95 % : % annulées 18,7 %, Rev_Spa>0 52,3 %, Forfait Gastro 42,1 %. IC resserrés (n ≈ 10 500). Décision : objectifs réalistes, suivre les écarts.",
+        "Khi-deux (Segment × Type_Forfait) : χ² ≈ 2842, p ≈ 0. Liaison très forte (Loisirs → Gastronomique, Congressiste → Chambre seule). Décision : cibler l'offre par segment.",
+        "Pearson (Rev_Spa × Satisfaction_NPS) : en brut r ≈ 0,45 ; après nettoyage r ≈ 0,76. Formuler « r ≈ 0,75 après nettoyage » (pas « avant anomalies »). Décision : leviers satisfaction / fidélisation.",
+        "ANOVA (Rev_Resto par Segment) : F ≈ 10 363, p ≈ 0. Différences très significatives (Local_Gourmet > Loisirs > Affaires > Congressiste > Local_Spa). Décision : allouer ressources restaurant par segment.",
+        "Régression (Total_Facture ~ Rev_Chambre + Rev_Resto + Rev_Spa) : coefficients ≈ 1,00 ; 1,08 ; 1,29, R² ≈ 0,9997. Cohérent avec le modèle 1 ; 1,1 ; 1,3. Décision : piloter structure des revenus.",
+        "Annulations par canal : Direct ~6,8 %, Intermédiaire ~30,5 %. Décision : risque OTA, développer le direct.",
+        "Anomalies pédagogiques : 15 Externes avec Nuits>0 ; 4 Annulee=Oui avec Nuits>0 ; 3 NPS=99 ; 5 % manquants Rev_Spa/Rev_Resto ; 10 doublons. Décision : nettoyage obligatoire avant analyse.",
+        "Tarification active : utiliser Saison_calendrier (pas Saison). Haute ~412 $, Basse ~265 $ (+55 %), p ≈ 0. Détail : Note_Saison_vs_Tarification_Dynamique.docx.",
+    ]
+    for s in synthèse_validation:
+        _add_para(doc, f"  • {s}")
+    doc.add_paragraph()
+
+    # ---- 5. Checklist professeur ----
+    _add_heading(doc, "5. Checklist – Éléments traités en cours / TD", level=1)
     _add_para(doc, "Le professeur peut cocher (manuellement dans ce document) les éléments d'apprentissage déjà traités avec les étudiants, afin de s'assurer que tous les objectifs du fichier sont couverts.")
     _add_para(doc, "Les lignes du tableau de la section 2 contiennent une colonne « Coché » à cocher au fur et à mesure.")
     doc.add_paragraph()

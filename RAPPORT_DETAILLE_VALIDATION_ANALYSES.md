@@ -71,10 +71,10 @@ Mesurer la **relation linéaire** entre deux variables numériques : ici **reven
 \( r = \text{Cov}(X,Y) / (s_X \cdot s_Y) \). Calcul sur les réservations non annulées et sans valeur manquante (n ≈ 8 121).
 
 ### Résultats constatés
-- **r = 0,45** — **p-value ≈ 0,000** — n = 8 121
+- **r ≈ 0,45** (données brutes) — **p-value ≈ 0,000** — n = 8 121. **Après nettoyage** (suppression doublons, NPS=99 → manquant, correction cohérente des annulées) : **r ≈ 0,76**, conforme à l'intention pédagogique.
 
 ### Interprétation
-**Corrélation positive significative** : plus les revenus Spa sont élevés, plus la satisfaction NPS tend à être élevée. La valeur r < 0,75 reflète une part de **bruit** volontairement introduite dans la simulation (réalisme et exercice d’interprétation).
+**Corrélation positive significative** : plus les revenus Spa sont élevés, plus la satisfaction NPS tend à être élevée. En **données brutes**, r ≈ 0,45 ; **après nettoyage**, r remonte à environ 0,76. La formulation pédagogique doit indiquer « r ≈ 0,75 **après nettoyage** », et non « avant anomalies ».
 
 ### Leçons à retenir
 - Une corrélation **positive et significative** suggère un **lien** entre dépense spa et satisfaction, sans prouver la causalité.
@@ -165,6 +165,7 @@ Comptages : Externes avec Nuits > 0 ; lignes avec NPS = 99 ; valeurs manquantes 
 
 ### Résultats constatés
 - **Externes avec Nuits > 0 :** 15
+- **Annulee = Oui avec Nuits > 0 :** 4 (incohérence logique à inclure dans la liste des anomalies pédagogiques)
 - **NPS = 99 :** 3
 - **Manquants Rev_Spa :** 526 (5,0 %) — **Manquants Rev_Resto :** 526 (5,0 %)
 - **Doublons :** 10
@@ -181,7 +182,13 @@ Les **anomalies sont présentes aux niveaux prévus** par la simulation. Le jeu 
 
 ---
 
-## 9. Synthèse pour les professeurs et le client
+## 9. Tarification active (Saison_calendrier)
+
+Pour les **exercices sur la tarification dynamique** (prix selon la période), utiliser la colonne **Saison_calendrier** (Basse / Épaule / Haute), dérivée du mois, et non la colonne **Saison** (Haute/Basse, liée au segment). Avec Saison_calendrier, la tarification active est nette : Haute ~412 $, Basse ~265 $ (+55 %), p ≈ 0. Voir **NOTE_SAISON_VS_TARIFICATION_DYNAMIQUE.md** et **Note_Saison_vs_Tarification_Dynamique.docx** pour le détail.
+
+---
+
+## 10. Synthèse pour les professeurs et le client
 
 - **Validité des données :** Les résultats des analyses sont **cohérents** avec la structure et les hypothèses du jeu de données (simulation). Les formules utilisées sont **standards** et reproductibles (voir `VERIFICATION_CALCULS_STATISTIQUES.md` et `verif_calculs_stats.py`).
 - **Formation des étudiants :** Chaque technique est **exploitable** en cours (objectif, formule, interprétation, leçon, lien avec la décision). Le rapport Excel `rapport_validation_sondage_hotel.xlsx` et le tableau synthèse `tableau_synthese_techniques_statistiques.xlsx` complètent ce document pour la validation et la démonstration auprès des professeurs et du client.
